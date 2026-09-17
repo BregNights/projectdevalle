@@ -16,16 +16,13 @@ import br.com.senac.projectdevalle.support.StubGeocodingPortConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.test.web.servlet.client.EntityExchangeResult;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.time.Instant;
 import java.util.List;
@@ -37,14 +34,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Import(StubGeocodingPortConfig.class)
 class RegisterAndApproveProducerE2ETest extends AbstractIntegrationTest {
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+    @LocalServerPort
+    private int port;
 
     @Autowired
     private JwtEncoder jwtEncoder;
 
     @Test
     void registersLogsInAndGetsApprovedByAdmin() {
+        RestTestClient client = RestTestClient.bindToServer().baseUrl("http://localhost:" + port).build();
+
         RegisterProducerRequest registerRequest = new RegisterProducerRequest(
                 "joao.pescador+" + UUID.randomUUID() + "@example.com",
                 "S3nhaForte!",
@@ -56,34 +55,50 @@ class RegisterAndApproveProducerE2ETest extends AbstractIntegrationTest {
                 List.of(new SupportingDocumentRequest(SupportingDocumentType.FISHING_LICENSE, "REG-12345",
                         "https://files/license.pdf")));
 
-        ResponseEntity<ProducerRegistrationResponse> registerResponse = restTemplate.postForEntity(
-                "/api/v1/producers", registerRequest, ProducerRegistrationResponse.class);
-        assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        UUID producerId = registerResponse.getBody().producerId();
-        assertThat(registerResponse.getBody().geocodingPending()).isFalse();
+        EntityExchangeResult<ProducerRegistrationResponse> registerResult = client.post()
+                .uri("/api/v1/producers")
+                .body(registerRequest)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody(ProducerRegistrationResponse.class)
+                .returnResult();
+        UUID producerId = registerResult.getResponseBody().producerId();
+        assertThat(registerResult.getResponseBody().geocodingPending()).isFalse();
 
-        ResponseEntity<TokenResponse> loginResponse = restTemplate.postForEntity("/api/v1/auth/login",
-                new LoginRequest(registerRequest.email(), registerRequest.password()), TokenResponse.class);
-        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(loginResponse.getBody().accessToken()).isNotBlank();
+        EntityExchangeResult<TokenResponse> loginResult = client.post()
+                .uri("/api/v1/auth/login")
+                .body(new LoginRequest(registerRequest.email(), registerRequest.password()))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(TokenResponse.class)
+                .returnResult();
+        assertThat(loginResult.getResponseBody().accessToken()).isNotBlank();
 
         String adminToken = mintToken("ADMINISTRATOR");
-        HttpEntity<Void> adminAuthEntity = new HttpEntity<>(authHeaders(adminToken));
 
-        ResponseEntity<ProducerResponse> beforeApproval = restTemplate.exchange(
-                "/api/v1/producers/" + producerId, HttpMethod.GET, adminAuthEntity,
-                ProducerResponse.class);
-        assertThat(beforeApproval.getBody().status()).isEqualTo(RegistrationStatus.PENDING);
+        EntityExchangeResult<ProducerResponse> beforeApproval = client.get()
+                .uri("/api/v1/producers/" + producerId)
+                .header("Authorization", "Bearer " + adminToken)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ProducerResponse.class)
+                .returnResult();
+        assertThat(beforeApproval.getResponseBody().status()).isEqualTo(RegistrationStatus.PENDING);
 
-        ResponseEntity<Void> approveResponse = restTemplate.exchange(
-                "/api/v1/admin/producers/" + producerId + "/approve", HttpMethod.POST,
-                adminAuthEntity, Void.class);
-        assertThat(approveResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        client.post()
+                .uri("/api/v1/admin/producers/" + producerId + "/approve")
+                .header("Authorization", "Bearer " + adminToken)
+                .exchange()
+                .expectStatus().isNoContent();
 
-        ResponseEntity<ProducerResponse> afterApproval = restTemplate.exchange(
-                "/api/v1/producers/" + producerId, HttpMethod.GET, adminAuthEntity,
-                ProducerResponse.class);
-        assertThat(afterApproval.getBody().status()).isEqualTo(RegistrationStatus.APPROVED);
+        EntityExchangeResult<ProducerResponse> afterApproval = client.get()
+                .uri("/api/v1/producers/" + producerId)
+                .header("Authorization", "Bearer " + adminToken)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ProducerResponse.class)
+                .returnResult();
+        assertThat(afterApproval.getResponseBody().status()).isEqualTo(RegistrationStatus.APPROVED);
     }
 
     private String mintToken(String role) {
@@ -96,11 +111,5 @@ class RegisterAndApproveProducerE2ETest extends AbstractIntegrationTest {
                 .claim("role", role)
                 .build();
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-    }
-
-    private HttpHeaders authHeaders(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        return headers;
     }
 }
