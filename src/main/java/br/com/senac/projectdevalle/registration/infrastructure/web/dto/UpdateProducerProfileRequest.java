@@ -4,4 +4,3 @@ import jakarta.validation.constraints.NotBlank;
 
 public record UpdateProducerProfileRequest(@NotBlank String name) {
 }
-</content>

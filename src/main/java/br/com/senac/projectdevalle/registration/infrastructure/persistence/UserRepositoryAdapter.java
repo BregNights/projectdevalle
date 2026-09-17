@@ -41,4 +41,3 @@ class UserRepositoryAdapter implements UserRepository {
         return jpaRepository.existsByEmail(email.value());
     }
 }
-</content>

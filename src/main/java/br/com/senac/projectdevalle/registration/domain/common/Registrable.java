@@ -15,4 +15,3 @@ public interface Registrable {
 
     RegistrationStatus status();
 }
-</content>

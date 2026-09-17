@@ -6,4 +6,3 @@ public enum RegistrationStatus {
     REJECTED,
     SUSPENDED
 }
-</content>

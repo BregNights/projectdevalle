@@ -24,4 +24,3 @@ class CoordinatesTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }
-</content>

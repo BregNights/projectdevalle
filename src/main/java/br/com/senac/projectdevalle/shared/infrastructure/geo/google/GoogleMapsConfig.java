@@ -24,4 +24,3 @@ public class GoogleMapsConfig {
                 .build();
     }
 }
-</content>

@@ -11,4 +11,3 @@ public record Coordinates(double latitude, double longitude) {
         }
     }
 }
-</content>

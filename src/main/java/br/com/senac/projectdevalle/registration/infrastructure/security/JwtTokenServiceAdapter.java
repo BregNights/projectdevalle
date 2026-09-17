@@ -71,4 +71,3 @@ class JwtTokenServiceAdapter implements TokenServicePort {
         }
     }
 }
-</content>

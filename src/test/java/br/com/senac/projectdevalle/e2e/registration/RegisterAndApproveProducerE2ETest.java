@@ -71,17 +71,17 @@ class RegisterAndApproveProducerE2ETest extends AbstractIntegrationTest {
         HttpEntity<Void> adminAuthEntity = new HttpEntity<>(authHeaders(adminToken));
 
         ResponseEntity<ProducerResponse> beforeApproval = restTemplate.exchange(
-                "/api/v1/producers/" + producerId, org.springframework.http.HttpMethod.GET, adminAuthEntity,
+                "/api/v1/producers/" + producerId, HttpMethod.GET, adminAuthEntity,
                 ProducerResponse.class);
         assertThat(beforeApproval.getBody().status()).isEqualTo(RegistrationStatus.PENDING);
 
         ResponseEntity<Void> approveResponse = restTemplate.exchange(
-                "/api/v1/admin/producers/" + producerId + "/approve", org.springframework.http.HttpMethod.POST,
+                "/api/v1/admin/producers/" + producerId + "/approve", HttpMethod.POST,
                 adminAuthEntity, Void.class);
         assertThat(approveResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         ResponseEntity<ProducerResponse> afterApproval = restTemplate.exchange(
-                "/api/v1/producers/" + producerId, org.springframework.http.HttpMethod.GET, adminAuthEntity,
+                "/api/v1/producers/" + producerId, HttpMethod.GET, adminAuthEntity,
                 ProducerResponse.class);
         assertThat(afterApproval.getBody().status()).isEqualTo(RegistrationStatus.APPROVED);
     }
@@ -104,4 +104,3 @@ class RegisterAndApproveProducerE2ETest extends AbstractIntegrationTest {
         return headers;
     }
 }
-</content>

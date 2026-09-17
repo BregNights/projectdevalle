@@ -71,4 +71,3 @@ class ProducerRepositoryAdapterIT extends AbstractIntegrationTest {
                 "https://files/license.pdf");
     }
 }
-</content>

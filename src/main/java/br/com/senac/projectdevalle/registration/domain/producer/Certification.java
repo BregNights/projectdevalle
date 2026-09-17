@@ -16,4 +16,3 @@ public record Certification(UUID id, CertificationType type, String proofUrl, Lo
                 && validUntil != null && !validUntil.isBefore(LocalDate.now(clock));
     }
 }
-</content>

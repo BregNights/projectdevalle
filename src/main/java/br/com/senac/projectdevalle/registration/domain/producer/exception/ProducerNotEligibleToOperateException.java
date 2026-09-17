@@ -8,4 +8,3 @@ public class ProducerNotEligibleToOperateException extends BusinessRuleViolation
         super(message);
     }
 }
-</content>

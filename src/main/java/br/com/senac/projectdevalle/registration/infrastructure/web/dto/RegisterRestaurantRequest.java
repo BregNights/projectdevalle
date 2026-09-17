@@ -18,4 +18,3 @@ public record RegisterRestaurantRequest(
         @NotNull @Valid AddressRequest initialAddress
 ) {
 }
-</content>

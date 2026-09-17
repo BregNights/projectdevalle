@@ -13,4 +13,3 @@ public class GeolocationUnavailableException extends RuntimeException {
         super(message);
     }
 }
-</content>

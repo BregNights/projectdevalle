@@ -4,4 +4,3 @@ import jakarta.validation.constraints.NotBlank;
 
 public record RequestPasswordResetRequest(@NotBlank String email) {
 }
-</content>

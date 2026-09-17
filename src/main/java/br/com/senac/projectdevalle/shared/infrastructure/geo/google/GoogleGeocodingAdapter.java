@@ -44,4 +44,3 @@ public class GoogleGeocodingAdapter implements GeocodingPort {
         return new Coordinates(location.lat(), location.lng());
     }
 }
-</content>

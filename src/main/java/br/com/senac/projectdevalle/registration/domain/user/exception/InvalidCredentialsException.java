@@ -8,4 +8,3 @@ public class InvalidCredentialsException extends BusinessRuleViolationException 
         super("Invalid email or password");
     }
 }
-</content>

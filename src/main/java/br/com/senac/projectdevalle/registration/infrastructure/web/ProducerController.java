@@ -124,4 +124,3 @@ public class ProducerController {
         return type == TaxDocumentType.CPF ? new Cpf(digits) : new Cnpj(digits);
     }
 }
-</content>

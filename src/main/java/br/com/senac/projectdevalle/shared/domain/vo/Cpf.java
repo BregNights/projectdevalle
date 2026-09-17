@@ -29,4 +29,3 @@ public record Cpf(String digits) implements TaxDocument {
         return remainder < 2 ? 0 : 11 - remainder;
     }
 }
-</content>

@@ -39,4 +39,3 @@ public class SuspendRegistrationService {
         restaurantRepository.save(restaurant);
     }
 }
-</content>

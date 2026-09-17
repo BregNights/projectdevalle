@@ -9,4 +9,3 @@ public interface ProducerRepository {
 
     Optional<Producer> findById(UUID id);
 }
-</content>

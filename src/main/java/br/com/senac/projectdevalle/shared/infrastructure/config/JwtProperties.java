@@ -8,4 +8,3 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "security.jwt")
 public record JwtProperties(String privateKey, String publicKey, Duration expiration) {
 }
-</content>

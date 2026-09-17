@@ -55,4 +55,3 @@ public class JwtKeysConfig {
         return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
 }
-</content>

@@ -77,4 +77,3 @@ public class RestaurantEntityMapper {
         return new DeliveryAddress(entity.getId(), entity.getLabel(), address, coordinates, entity.isPrimary());
     }
 }
-</content>

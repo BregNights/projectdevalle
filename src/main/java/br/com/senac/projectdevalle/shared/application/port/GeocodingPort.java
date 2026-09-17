@@ -10,4 +10,3 @@ public interface GeocodingPort {
     // encontra o endereço — nunca propaga exceptions de infraestrutura (HTTP, parsing) para o domínio.
     Coordinates geocode(Address address) throws GeolocationUnavailableException;
 }
-</content>

@@ -17,4 +17,3 @@ public record AddressRequest(
         return new Address(street, number, neighborhood, city, state, zipCode, complement);
     }
 }
-</content>

@@ -6,4 +6,3 @@ public enum CertificationType {
     GOOD_FISHING_PRACTICES,
     OTHER
 }
-</content>

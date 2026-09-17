@@ -84,4 +84,3 @@ class RegisterProducerServiceTest {
                 new Cpf("12345678909"), ProductionType.FARMING, address, List.of(document));
     }
 }
-</content>

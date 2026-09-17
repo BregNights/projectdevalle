@@ -6,4 +6,3 @@ public enum ProductionType {
     LIVESTOCK,
     ARTISANAL_PROCESSING
 }
-</content>

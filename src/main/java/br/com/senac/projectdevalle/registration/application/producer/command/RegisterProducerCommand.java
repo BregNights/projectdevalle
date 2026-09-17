@@ -18,4 +18,3 @@ public record RegisterProducerCommand(
         List<SupportingDocument> supportingDocuments
 ) {
 }
-</content>

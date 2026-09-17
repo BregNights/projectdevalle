@@ -13,4 +13,3 @@ public record Email(String value) {
         value = value.trim().toLowerCase();
     }
 }
-</content>

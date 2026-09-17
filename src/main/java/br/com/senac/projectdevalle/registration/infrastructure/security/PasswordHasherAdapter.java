@@ -23,4 +23,3 @@ class PasswordHasherAdapter implements PasswordHasher {
         return passwordEncoder.matches(rawPassword, hash);
     }
 }
-</content>

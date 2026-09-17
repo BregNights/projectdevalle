@@ -14,4 +14,3 @@ public class CoverageAreaConfig {
         return new ConfigurableCoverageAreaPolicy(properties);
     }
 }
-</content>

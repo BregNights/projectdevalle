@@ -13,4 +13,3 @@ public interface TokenServicePort {
     // Lança IllegalArgumentException se o token for inválido, expirado ou não for de reset de senha.
     UUID parsePasswordResetSubject(String token);
 }
-</content>

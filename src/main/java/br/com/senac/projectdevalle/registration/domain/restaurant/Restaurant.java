@@ -146,4 +146,3 @@ public class Restaurant implements Registrable {
         return List.copyOf(deliveryAddresses);
     }
 }
-</content>

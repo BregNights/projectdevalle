@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record RestaurantRegistrationResponse(UUID restaurantId, UUID userId) {
 }
-</content>

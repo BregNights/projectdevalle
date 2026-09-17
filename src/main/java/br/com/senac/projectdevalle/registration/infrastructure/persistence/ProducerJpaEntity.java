@@ -116,4 +116,3 @@ public class ProducerJpaEntity extends AuditableJpaEntity {
     @OneToMany(mappedBy = "producer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ProducerCertificationJpaEntity> certifications = new ArrayList<>();
 }
-</content>

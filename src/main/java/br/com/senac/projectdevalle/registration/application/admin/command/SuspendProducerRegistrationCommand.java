@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record SuspendProducerRegistrationCommand(UUID producerId, String reason) {
 }
-</content>

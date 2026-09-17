@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record ApproveProducerRegistrationCommand(UUID producerId) {
 }
-</content>

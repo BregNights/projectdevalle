@@ -16,4 +16,3 @@ record DistanceMatrixResponse(String status, List<Row> rows) {
     record ValueInSeconds(long value) {
     }
 }
-</content>

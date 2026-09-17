@@ -31,4 +31,3 @@ public record Cnpj(String digits) implements TaxDocument {
         return remainder < 2 ? 0 : 11 - remainder;
     }
 }
-</content>

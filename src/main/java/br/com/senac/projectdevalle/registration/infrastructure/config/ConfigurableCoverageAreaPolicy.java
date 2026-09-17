@@ -17,4 +17,3 @@ class ConfigurableCoverageAreaPolicy implements CoverageAreaPolicy {
                 .anyMatch(city -> city.equalsIgnoreCase(address.city()));
     }
 }
-</content>

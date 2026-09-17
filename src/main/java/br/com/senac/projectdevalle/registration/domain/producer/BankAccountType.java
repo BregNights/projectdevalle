@@ -4,4 +4,3 @@ public enum BankAccountType {
     CHECKING,
     SAVINGS
 }
-</content>

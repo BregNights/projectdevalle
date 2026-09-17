@@ -127,4 +127,3 @@ class ProducerTest {
         return SupportingDocument.issue(SupportingDocumentType.CPF, "12345678909", "https://files/doc.pdf");
     }
 }
-</content>

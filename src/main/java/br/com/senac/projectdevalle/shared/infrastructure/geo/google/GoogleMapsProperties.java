@@ -7,4 +7,3 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "google.maps")
 public record GoogleMapsProperties(String apiKey, Duration connectTimeout, Duration readTimeout) {
 }
-</content>

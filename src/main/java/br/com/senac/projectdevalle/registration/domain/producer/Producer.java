@@ -189,4 +189,3 @@ public class Producer implements Registrable {
         return deliveryArea;
     }
 }
-</content>

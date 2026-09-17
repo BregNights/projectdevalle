@@ -43,4 +43,3 @@ class RestaurantRepositoryAdapterIT extends AbstractIntegrationTest {
         return new Address("Rua XV de Novembro", "500", "Centro", "Itajai", "SC", "88301-000", null);
     }
 }
-</content>

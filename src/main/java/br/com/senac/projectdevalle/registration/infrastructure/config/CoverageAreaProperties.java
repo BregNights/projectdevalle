@@ -13,4 +13,3 @@ public record CoverageAreaProperties(List<String> cities) {
         cities = cities == null ? List.of() : List.copyOf(cities);
     }
 }
-</content>

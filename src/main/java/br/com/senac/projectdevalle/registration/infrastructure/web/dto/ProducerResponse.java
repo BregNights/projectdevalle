@@ -26,4 +26,3 @@ public record ProducerResponse(
                 producer.isGeocodingPending(), visibleCertifications);
     }
 }
-</content>

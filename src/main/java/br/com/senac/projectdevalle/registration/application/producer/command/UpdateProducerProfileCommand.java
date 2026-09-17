@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record UpdateProducerProfileCommand(UUID producerId, String name) {
 }
-</content>

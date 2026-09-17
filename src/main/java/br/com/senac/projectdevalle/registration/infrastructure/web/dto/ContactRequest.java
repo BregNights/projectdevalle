@@ -9,4 +9,3 @@ public record ContactRequest(@NotBlank String name, String role, String phone, S
         return new Contact(name, role, phone, email);
     }
 }
-</content>

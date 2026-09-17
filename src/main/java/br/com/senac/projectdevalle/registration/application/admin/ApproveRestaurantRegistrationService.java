@@ -24,4 +24,3 @@ public class ApproveRestaurantRegistrationService {
         restaurantRepository.save(restaurant);
     }
 }
-</content>

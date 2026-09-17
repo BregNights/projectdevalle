@@ -28,4 +28,3 @@ public class WebConfig {
         return source;
     }
 }
-</content>

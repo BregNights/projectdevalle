@@ -9,4 +9,3 @@ CREATE TABLE producer_certifications (
 );
 
 CREATE INDEX idx_producer_certifications_producer_id ON producer_certifications(producer_id);
-</content>

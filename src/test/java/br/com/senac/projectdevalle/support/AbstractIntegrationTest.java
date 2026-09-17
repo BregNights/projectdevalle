@@ -25,4 +25,3 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
     }
 }
-</content>

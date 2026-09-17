@@ -15,4 +15,3 @@ public interface UserRepository {
 
     boolean existsByEmail(Email email);
 }
-</content>

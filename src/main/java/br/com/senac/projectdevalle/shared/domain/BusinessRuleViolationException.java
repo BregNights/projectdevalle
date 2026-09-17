@@ -6,4 +6,3 @@ public class BusinessRuleViolationException extends DomainException {
         super(message);
     }
 }
-</content>

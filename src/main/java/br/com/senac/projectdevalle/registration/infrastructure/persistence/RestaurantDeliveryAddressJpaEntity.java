@@ -71,4 +71,3 @@ public class RestaurantDeliveryAddressJpaEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 }
-</content>

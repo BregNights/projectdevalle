@@ -9,4 +9,3 @@ public interface CoverageAreaPolicy {
 
     boolean covers(Address address);
 }
-</content>

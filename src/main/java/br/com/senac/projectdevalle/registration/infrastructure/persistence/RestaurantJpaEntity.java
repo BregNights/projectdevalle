@@ -68,4 +68,3 @@ public class RestaurantJpaEntity extends AuditableJpaEntity {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<RestaurantDeliveryAddressJpaEntity> deliveryAddresses = new ArrayList<>();
 }
-</content>

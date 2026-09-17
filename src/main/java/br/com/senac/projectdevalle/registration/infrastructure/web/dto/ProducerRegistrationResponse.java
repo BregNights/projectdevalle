@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record ProducerRegistrationResponse(UUID producerId, UUID userId, boolean geocodingPending) {
 }
-</content>

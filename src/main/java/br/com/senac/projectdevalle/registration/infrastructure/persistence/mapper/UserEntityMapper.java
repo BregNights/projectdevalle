@@ -25,4 +25,3 @@ public class UserEntityMapper {
                 entity.getRole(), entity.isActive());
     }
 }
-</content>

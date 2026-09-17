@@ -13,4 +13,3 @@ record GeocodeResponse(String status, List<Result> results) {
     record Location(double lat, double lng) {
     }
 }
-</content>

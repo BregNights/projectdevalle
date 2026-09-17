@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record SuspendRestaurantRegistrationCommand(UUID restaurantId, String reason) {
 }
-</content>

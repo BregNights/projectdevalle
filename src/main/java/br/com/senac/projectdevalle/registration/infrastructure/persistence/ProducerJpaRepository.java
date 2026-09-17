@@ -6,4 +6,3 @@ import java.util.UUID;
 
 interface ProducerJpaRepository extends JpaRepository<ProducerJpaEntity, UUID> {
 }
-</content>

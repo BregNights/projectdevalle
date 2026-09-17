@@ -8,4 +8,3 @@ public class RestaurantNotEligibleToOperateException extends BusinessRuleViolati
         super(message);
     }
 }
-</content>

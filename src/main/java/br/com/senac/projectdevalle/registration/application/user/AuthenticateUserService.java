@@ -32,4 +32,3 @@ public class AuthenticateUserService {
         return tokenServicePort.issueAccessToken(user);
     }
 }
-</content>

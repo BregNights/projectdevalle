@@ -6,4 +6,3 @@ import java.util.UUID;
 
 public record UpdateBankDetailsCommand(UUID producerId, BankDetails bankDetails) {
 }
-</content>

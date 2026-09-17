@@ -26,4 +26,3 @@ class CnpjTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }
-</content>

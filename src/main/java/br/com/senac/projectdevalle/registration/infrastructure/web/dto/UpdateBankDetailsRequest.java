@@ -17,4 +17,3 @@ public record UpdateBankDetailsRequest(
         return new BankDetails(bankName, agency, account, accountType, accountHolder);
     }
 }
-</content>

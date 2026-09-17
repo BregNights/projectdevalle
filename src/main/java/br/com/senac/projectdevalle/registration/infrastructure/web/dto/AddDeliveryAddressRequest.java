@@ -10,4 +10,3 @@ public record AddDeliveryAddressRequest(
         boolean primary
 ) {
 }
-</content>

@@ -7,4 +7,3 @@ CREATE INDEX idx_producers_status ON producers(status);
 CREATE INDEX idx_producers_user_id ON producers(user_id);
 CREATE INDEX idx_restaurants_status ON restaurants(status);
 CREATE INDEX idx_restaurants_user_id ON restaurants(user_id);
-</content>

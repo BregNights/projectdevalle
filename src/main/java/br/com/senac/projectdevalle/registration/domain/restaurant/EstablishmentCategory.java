@@ -6,4 +6,3 @@ public enum EstablishmentCategory {
     CHAIN,
     OTHER
 }
-</content>

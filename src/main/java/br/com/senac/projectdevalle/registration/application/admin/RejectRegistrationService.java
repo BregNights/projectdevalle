@@ -38,4 +38,3 @@ public class RejectRegistrationService {
         restaurantRepository.save(restaurant);
     }
 }
-</content>

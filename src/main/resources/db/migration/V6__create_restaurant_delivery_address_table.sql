@@ -16,4 +16,3 @@ CREATE TABLE restaurant_delivery_addresses (
 );
 
 CREATE INDEX idx_restaurant_delivery_addresses_restaurant_id ON restaurant_delivery_addresses(restaurant_id);
-</content>

@@ -21,4 +21,3 @@ security:
     private-key: ${JWT_PRIVATE_KEY}
     public-key: ${JWT_PUBLIC_KEY}
     expiration: 8h
-</content>

@@ -9,4 +9,3 @@ CREATE TABLE producer_supporting_documents (
 );
 
 CREATE INDEX idx_producer_supporting_documents_producer_id ON producer_supporting_documents(producer_id);
-</content>

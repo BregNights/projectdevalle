@@ -21,4 +21,3 @@ public record RegisterProducerRequest(
         @NotEmpty List<@Valid SupportingDocumentRequest> supportingDocuments
 ) {
 }
-</content>

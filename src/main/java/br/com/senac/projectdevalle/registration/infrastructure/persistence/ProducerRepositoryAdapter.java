@@ -30,4 +30,3 @@ class ProducerRepositoryAdapter implements ProducerRepository {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 }
-</content>

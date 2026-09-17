@@ -19,4 +19,3 @@ public record RestaurantResponse(
                 restaurant.status(), restaurant.deliveryAddresses().size());
     }
 }
-</content>

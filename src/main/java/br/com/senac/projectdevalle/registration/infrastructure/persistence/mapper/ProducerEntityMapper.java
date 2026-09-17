@@ -114,4 +114,3 @@ public class ProducerEntityMapper {
                 deliveryArea, entity.getStatus());
     }
 }
-</content>

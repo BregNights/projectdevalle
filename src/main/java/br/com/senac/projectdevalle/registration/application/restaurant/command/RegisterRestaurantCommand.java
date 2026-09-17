@@ -17,4 +17,3 @@ public record RegisterRestaurantCommand(
         Address initialAddress
 ) {
 }
-</content>

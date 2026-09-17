@@ -14,4 +14,3 @@ public record SupportingDocument(UUID id, SupportingDocumentType type, String do
         return new SupportingDocument(UUID.randomUUID(), type, documentNumber, fileUrl);
     }
 }
-</content>

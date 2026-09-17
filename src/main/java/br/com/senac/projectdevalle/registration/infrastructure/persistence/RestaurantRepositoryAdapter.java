@@ -30,4 +30,3 @@ class RestaurantRepositoryAdapter implements RestaurantRepository {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 }
-</content>

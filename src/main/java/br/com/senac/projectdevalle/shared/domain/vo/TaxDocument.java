@@ -5,4 +5,3 @@ public sealed interface TaxDocument permits Cpf, Cnpj {
 
     String digits();
 }
-</content>

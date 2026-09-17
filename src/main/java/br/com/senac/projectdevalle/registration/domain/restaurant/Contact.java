@@ -8,4 +8,3 @@ public record Contact(String name, String role, String phone, String email) {
         }
     }
 }
-</content>

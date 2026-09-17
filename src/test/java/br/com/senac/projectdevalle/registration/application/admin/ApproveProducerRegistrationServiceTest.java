@@ -63,4 +63,3 @@ class ApproveProducerRegistrationServiceTest {
                 new OriginLocation(address, coordinates), List.of(document));
     }
 }
-</content>

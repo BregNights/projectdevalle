@@ -24,4 +24,3 @@ public class UpdateBankDetailsService {
         producerRepository.save(producer);
     }
 }
-</content>

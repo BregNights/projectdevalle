@@ -11,4 +11,3 @@ public record UpdateRestaurantProfileRequest(
         @NotNull @Valid ContactRequest contact
 ) {
 }
-</content>

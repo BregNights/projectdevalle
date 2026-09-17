@@ -17,4 +17,3 @@ public class StubGeocodingPortConfig {
         return address -> new Coordinates(-26.9194, -49.0661);
     }
 }
-</content>

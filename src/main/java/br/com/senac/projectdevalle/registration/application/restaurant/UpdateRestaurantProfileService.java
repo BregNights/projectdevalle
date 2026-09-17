@@ -24,4 +24,3 @@ public class UpdateRestaurantProfileService {
         restaurantRepository.save(restaurant);
     }
 }
-</content>

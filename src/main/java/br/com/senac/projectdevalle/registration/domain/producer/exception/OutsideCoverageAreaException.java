@@ -8,4 +8,3 @@ public class OutsideCoverageAreaException extends BusinessRuleViolationException
         super("Producer origin location is outside the platform coverage area");
     }
 }
-</content>

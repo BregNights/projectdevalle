@@ -6,4 +6,3 @@ public enum SupportingDocumentType {
     DAP_CAF,
     FISHING_LICENSE
 }
-</content>

@@ -11,4 +11,3 @@ interface UserJpaRepository extends JpaRepository<UserJpaEntity, UUID> {
 
     boolean existsByEmail(String email);
 }
-</content>

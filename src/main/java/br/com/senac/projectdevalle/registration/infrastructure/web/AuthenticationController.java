@@ -56,4 +56,3 @@ public class AuthenticationController {
         recoverAccessService.resetPassword(new ResetPasswordCommand(request.resetToken(), request.newPassword()));
     }
 }
-</content>

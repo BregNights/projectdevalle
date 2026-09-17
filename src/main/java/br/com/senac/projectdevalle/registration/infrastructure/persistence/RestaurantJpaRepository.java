@@ -6,4 +6,3 @@ import java.util.UUID;
 
 interface RestaurantJpaRepository extends JpaRepository<RestaurantJpaEntity, UUID> {
 }
-</content>

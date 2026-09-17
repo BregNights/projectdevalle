@@ -6,4 +6,3 @@ import java.util.UUID;
 
 public record AddDeliveryAddressCommand(UUID restaurantId, String label, Address address, boolean primary) {
 }
-</content>

@@ -15,4 +15,3 @@ public record SupportingDocumentRequest(
         return SupportingDocument.issue(type, documentNumber, fileUrl);
     }
 }
-</content>

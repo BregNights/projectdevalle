@@ -32,4 +32,3 @@ class CpfTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }
-</content>

@@ -10,4 +10,3 @@ public record DeliveryArea(List<String> municipalities) {
         municipalities = municipalities == null ? List.of() : List.copyOf(municipalities);
     }
 }
-</content>

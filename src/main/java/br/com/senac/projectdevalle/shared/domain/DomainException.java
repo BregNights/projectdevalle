@@ -6,4 +6,3 @@ public abstract class DomainException extends RuntimeException {
         super(message);
     }
 }
-</content>

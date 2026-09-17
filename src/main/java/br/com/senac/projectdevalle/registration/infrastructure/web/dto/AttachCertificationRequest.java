@@ -12,4 +12,3 @@ public record AttachCertificationRequest(
         @NotNull LocalDate validUntil
 ) {
 }
-</content>

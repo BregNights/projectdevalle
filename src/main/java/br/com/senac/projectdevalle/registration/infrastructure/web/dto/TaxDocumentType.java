@@ -4,4 +4,3 @@ public enum TaxDocumentType {
     CPF,
     CNPJ
 }
-</content>

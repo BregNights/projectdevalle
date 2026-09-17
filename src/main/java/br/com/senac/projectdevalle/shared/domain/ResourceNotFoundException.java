@@ -6,4 +6,3 @@ public class ResourceNotFoundException extends DomainException {
         super(message);
     }
 }
-</content>

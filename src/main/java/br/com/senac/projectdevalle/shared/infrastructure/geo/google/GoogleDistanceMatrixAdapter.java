@@ -57,4 +57,3 @@ public class GoogleDistanceMatrixAdapter implements DistanceCalculationPort {
         return String.format(Locale.US, "%f,%f", coordinates.latitude(), coordinates.longitude());
     }
 }
-</content>

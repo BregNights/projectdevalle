@@ -42,4 +42,3 @@ public class UserJpaEntity extends AuditableJpaEntity {
     @Column(nullable = false)
     private boolean active;
 }
-</content>

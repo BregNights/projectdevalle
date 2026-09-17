@@ -46,4 +46,3 @@ public class RecoverAccessService {
         userRepository.save(user);
     }
 }
-</content>

@@ -11,4 +11,3 @@ public record UpdateDeliveryAreaRequest(@NotEmpty List<String> municipalities) {
         return new DeliveryArea(municipalities);
     }
 }
-</content>

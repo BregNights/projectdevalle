@@ -9,4 +9,3 @@ public interface DistanceCalculationPort {
 
     EstimatedDistance calculate(Coordinates origin, Coordinates destination) throws GeolocationUnavailableException;
 }
-</content>

@@ -30,4 +30,3 @@ public class ApproveProducerRegistrationService {
         producerRepository.save(producer);
     }
 }
-</content>

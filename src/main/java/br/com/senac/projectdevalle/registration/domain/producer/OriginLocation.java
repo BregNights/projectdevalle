@@ -21,4 +21,3 @@ public record OriginLocation(Address address, Coordinates coordinates) {
         return new OriginLocation(address, newCoordinates);
     }
 }
-</content>

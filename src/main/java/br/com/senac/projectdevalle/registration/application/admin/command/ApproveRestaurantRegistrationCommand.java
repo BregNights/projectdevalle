@@ -4,4 +4,3 @@ import java.util.UUID;
 
 public record ApproveRestaurantRegistrationCommand(UUID restaurantId) {
 }
-</content>

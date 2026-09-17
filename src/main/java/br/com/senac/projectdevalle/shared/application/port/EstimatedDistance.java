@@ -10,4 +10,3 @@ public record EstimatedDistance(double kilometers, Duration duration) {
         }
     }
 }
-</content>

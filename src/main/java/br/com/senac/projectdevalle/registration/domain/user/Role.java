@@ -6,4 +6,3 @@ public enum Role {
     ADMINISTRATOR,
     LOGISTICS_OPERATOR
 }
-</content>

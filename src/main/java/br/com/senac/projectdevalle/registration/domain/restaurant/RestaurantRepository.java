@@ -9,4 +9,3 @@ public interface RestaurantRepository {
 
     Optional<Restaurant> findById(UUID id);
 }
-</content>

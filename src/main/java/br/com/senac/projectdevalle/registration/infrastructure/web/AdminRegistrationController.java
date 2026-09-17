@@ -81,4 +81,3 @@ public class AdminRegistrationController {
         suspendRegistrationService.suspendRestaurant(new SuspendRestaurantRegistrationCommand(id, request.reason()));
     }
 }
-</content>

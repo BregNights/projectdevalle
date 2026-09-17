@@ -8,4 +8,3 @@ public class CertificationWithoutValidProofException extends BusinessRuleViolati
         super("Certification requires a proof document and a future validity date");
     }
 }
-</content>

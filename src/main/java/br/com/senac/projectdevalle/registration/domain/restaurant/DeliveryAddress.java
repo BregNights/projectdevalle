@@ -19,4 +19,3 @@ public record DeliveryAddress(UUID id, String label, Address address, Coordinate
         return new DeliveryAddress(id, label, address, coordinates, newPrimary);
     }
 }
-</content>
