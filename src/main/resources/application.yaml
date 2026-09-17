@@ -13,4 +13,25 @@ springdoc:
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  registration:
+    coverage-area:
+      # RN02/RF43 — regiões atendidas inicialmente (Vale do Itajaí e litoral norte de SC).
+      cities:
+        - Blumenau
+        - Brusque
+        - Gaspar
+        - Indaial
+        - Timbó
+        - Pomerode
+        - Ilhota
+        - Itajaí
+        - Navegantes
+        - Balneário Camboriú
+        - Camboriú
+        - Itapema
+        - Penha
+        - Piçarras
+        - Barra Velha
+        - São Francisco do Sul
+        - Joinville
 </content>
