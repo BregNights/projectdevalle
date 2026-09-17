@@ -47,11 +47,11 @@ class RegisterProducerServiceTest {
     @BeforeEach
     void setUp() {
         service = new RegisterProducerService(userRepository, producerRepository, passwordHasher, geocodingPort);
-        when(passwordHasher.hash(any())).thenReturn("hashed-password");
     }
 
     @Test
     void savesProducerWithResolvedCoordinatesWhenGeocodingSucceeds() {
+        when(passwordHasher.hash(any())).thenReturn("hashed-password");
         when(geocodingPort.geocode(any())).thenReturn(new Coordinates(-26.9, -48.6));
 
         RegisterProducerResult result = service.register(validCommand());
@@ -61,6 +61,7 @@ class RegisterProducerServiceTest {
 
     @Test
     void savesProducerAsGeocodingPendingWhenGeocodingFails() {
+        when(passwordHasher.hash(any())).thenReturn("hashed-password");
         when(geocodingPort.geocode(any())).thenThrow(new GeolocationUnavailableException("timeout"));
 
         RegisterProducerResult result = service.register(validCommand());
