@@ -77,20 +77,26 @@ export function DashboardPage() {
   if (producer) {
     return (
       <div className="page">
-        <h1>{producer.name}</h1>
-        <p>
-          Status do cadastro: <StatusBadge status={producer.status} />
-        </p>
-        <p>Tipo de produção: {PRODUCTION_TYPE_LABELS[producer.productionType] ?? producer.productionType}</p>
-        {producer.geocodingPending && (
-          <p className="form-notice">
-            Ainda não localizamos seu endereço no mapa. Isso será resolvido antes da aprovação do seu cadastro.
-          </p>
-        )}
-        <p>
-          Certificações visíveis:{' '}
-          {producer.visibleCertifications.length > 0 ? producer.visibleCertifications.join(', ') : 'nenhuma'}
-        </p>
+        <div className="dashboard-card">
+          <h1>{producer.name}</h1>
+          <StatusBadge status={producer.status} />
+          <div className="dashboard-meta">
+            <span>
+              Tipo de produção: <strong>{PRODUCTION_TYPE_LABELS[producer.productionType] ?? producer.productionType}</strong>
+            </span>
+            <span>
+              Certificações visíveis:{' '}
+              <strong>
+                {producer.visibleCertifications.length > 0 ? producer.visibleCertifications.join(', ') : 'nenhuma'}
+              </strong>
+            </span>
+          </div>
+          {producer.geocodingPending && (
+            <p className="form-notice">
+              Ainda não localizamos seu endereço no mapa. Isso será resolvido antes da aprovação do seu cadastro.
+            </p>
+          )}
+        </div>
       </div>
     );
   }
@@ -98,12 +104,18 @@ export function DashboardPage() {
   if (restaurant) {
     return (
       <div className="page">
-        <h1>{restaurant.corporateName}</h1>
-        <p>
-          Status do cadastro: <StatusBadge status={restaurant.status} />
-        </p>
-        <p>Categoria: {CATEGORY_LABELS[restaurant.category] ?? restaurant.category}</p>
-        <p>Endereços de entrega cadastrados: {restaurant.deliveryAddressCount}</p>
+        <div className="dashboard-card">
+          <h1>{restaurant.corporateName}</h1>
+          <StatusBadge status={restaurant.status} />
+          <div className="dashboard-meta">
+            <span>
+              Categoria: <strong>{CATEGORY_LABELS[restaurant.category] ?? restaurant.category}</strong>
+            </span>
+            <span>
+              Endereços de entrega: <strong>{restaurant.deliveryAddressCount}</strong>
+            </span>
+          </div>
+        </div>
       </div>
     );
   }
