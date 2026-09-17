@@ -1,0 +1,53 @@
+import type { ProblemDetail } from './types';
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  body?: unknown;
+  token?: string | null;
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (options.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: options.method ?? 'GET',
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : undefined;
+
+  if (!response.ok) {
+    const problem = data as ProblemDetail | undefined;
+    throw new ApiError(problem?.detail ?? 'Erro inesperado ao comunicar com o servidor', response.status);
+  }
+
+  return data as T;
+}
+
+export const apiClient = {
+  get: <T>(path: string, token?: string | null) => request<T>(path, { method: 'GET', token }),
+  post: <T>(path: string, body?: unknown, token?: string | null) =>
+    request<T>(path, { method: 'POST', body, token }),
+  put: <T>(path: string, body?: unknown, token?: string | null) =>
+    request<T>(path, { method: 'PUT', body, token }),
+};

@@ -8,4 +8,6 @@ public interface ProducerRepository {
     Producer save(Producer producer);
 
     Optional<Producer> findById(UUID id);
+
+    Optional<Producer> findByUserId(UUID userId);
 }

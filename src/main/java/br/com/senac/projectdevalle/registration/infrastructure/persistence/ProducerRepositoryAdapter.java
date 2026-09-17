@@ -29,4 +29,9 @@ class ProducerRepositoryAdapter implements ProducerRepository {
     public Optional<Producer> findById(UUID id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
+
+    @Override
+    public Optional<Producer> findByUserId(UUID userId) {
+        return jpaRepository.findByUserId(userId).map(mapper::toDomain);
+    }
 }

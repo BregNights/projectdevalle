@@ -19,6 +19,8 @@ import br.com.senac.projectdevalle.shared.domain.vo.Cnpj;
 import br.com.senac.projectdevalle.shared.domain.vo.Email;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -70,6 +72,15 @@ public class RestaurantController {
     public RestaurantResponse findById(@PathVariable UUID id) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found: " + id));
+        return RestaurantResponse.from(restaurant);
+    }
+
+    // Permite ao próprio restaurante autenticado consultar seu cadastro sem conhecer o restaurantId.
+    @GetMapping("/me")
+    public RestaurantResponse findMine(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        Restaurant restaurant = restaurantRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("No restaurant registered for current user"));
         return RestaurantResponse.from(restaurant);
     }
 

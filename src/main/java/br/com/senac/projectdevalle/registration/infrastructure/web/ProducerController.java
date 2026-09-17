@@ -30,6 +30,8 @@ import br.com.senac.projectdevalle.shared.domain.vo.Email;
 import br.com.senac.projectdevalle.shared.domain.vo.TaxDocument;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -92,6 +94,15 @@ public class ProducerController {
     public ProducerResponse findById(@PathVariable UUID id) {
         Producer producer = producerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producer not found: " + id));
+        return ProducerResponse.from(producer, clock);
+    }
+
+    // Permite ao próprio produtor autenticado consultar seu cadastro sem conhecer o producerId.
+    @GetMapping("/me")
+    public ProducerResponse findMine(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        Producer producer = producerRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("No producer registered for current user"));
         return ProducerResponse.from(producer, clock);
     }
 
