@@ -1,4 +1,10 @@
 import type { ReactNode } from 'react';
+import { ImageTextBlock } from '../components/ImageTextBlock';
+
+const IMAGES = {
+  producer: 'https://images.unsplash.com/photo-1757627550652-30788bfce978?auto=format&fit=crop&w=1000&q=80',
+  restaurant: 'https://images.unsplash.com/photo-1761095596765-c8abe01d3aea?auto=format&fit=crop&w=1000&q=80',
+};
 
 const PRODUCER_BENEFITS = [
   {
@@ -120,6 +126,18 @@ export function HomePage() {
       </section>
 
       <Section eyebrow="Para produtores e pescadores">
+        <ImageTextBlock
+          image={IMAGES.producer}
+          alt="Caixas de hortaliças frescas recém-colhidas"
+          eyebrow="Do campo e do mar direto pro restaurante"
+          title="Sua produção vale mais quando vendida direto"
+          text="Sem atravessador, sem intermediário levando a margem que devia ser sua. Você publica, negocia e recebe com garantia."
+          bullets={[
+            'Ofertas recorrentes ou pontuais, do jeito que sua produção funciona',
+            'Preço de referência sugerido, mas a decisão é sempre sua',
+            'Pagamento retido até a confirmação da entrega',
+          ]}
+        />
         <div className="feature-grid">
           {PRODUCER_BENEFITS.map((item) => (
             <div className="feature-card" key={item.title}>
@@ -131,6 +149,19 @@ export function HomePage() {
       </Section>
 
       <Section alt eyebrow="Para restaurantes">
+        <ImageTextBlock
+          image={IMAGES.restaurant}
+          alt="Chef preparando um prato em cozinha profissional"
+          eyebrow="Ingredientes locais, com rastreabilidade real"
+          title="Compre com informação, não no escuro"
+          text="Veja distância, certificações e histórico de preço antes de fechar. Depois, acompanhe a entrega até a sua cozinha."
+          bullets={[
+            'Catálogo filtrável por região, certificação e prazo',
+            'Rastreabilidade de origem em cada pedido',
+            'Negociação assistida e pedidos recorrentes automatizados',
+          ]}
+          reverse
+        />
         <div className="feature-grid">
           {RESTAURANT_BENEFITS.map((item) => (
             <div className="feature-card" key={item.title}>

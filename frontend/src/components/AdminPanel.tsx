@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { apiClient, ApiError } from '../api/client';
+import { CATEGORY_LABELS, PRODUCTION_TYPE_LABELS } from '../api/labels';
 import type { ProducerResponse, RegistrationStatus, RestaurantResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { AdminMetrics } from './AdminMetrics';
 import { StatusBadge } from './StatusBadge';
 
 type Kind = 'producer' | 'restaurant';
+type Tab = 'overview' | 'queue';
 
 const STATUS_OPTIONS: { value: RegistrationStatus; label: string }[] = [
   { value: 'PENDING', label: 'Pendentes' },
@@ -13,22 +16,9 @@ const STATUS_OPTIONS: { value: RegistrationStatus; label: string }[] = [
   { value: 'SUSPENDED', label: 'Suspensos' },
 ];
 
-const PRODUCTION_TYPE_LABELS: Record<string, string> = {
-  FARMING: 'Agricultura',
-  FISHING: 'Pesca',
-  LIVESTOCK: 'Pecuária',
-  ARTISANAL_PROCESSING: 'Processamento artesanal',
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  FINE_DINING: 'Alta gastronomia',
-  BISTRO: 'Bistrô',
-  CHAIN: 'Rede',
-  OTHER: 'Outro',
-};
-
 export function AdminPanel() {
   const { token } = useAuth();
+  const [tab, setTab] = useState<Tab>('overview');
   const [status, setStatus] = useState<RegistrationStatus>('PENDING');
   const [producers, setProducers] = useState<ProducerResponse[]>([]);
   const [restaurants, setRestaurants] = useState<RestaurantResponse[]>([]);
@@ -54,8 +44,10 @@ export function AdminPanel() {
   }, [status, token]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (tab === 'queue') {
+      load();
+    }
+  }, [load, tab]);
 
   async function handleApprove(kind: Kind, id: string) {
     setBusyId(id);
@@ -99,65 +91,80 @@ export function AdminPanel() {
   return (
     <div className="page admin-panel">
       <h1>Painel de administração</h1>
-      <p className="admin-subtitle">Aprovação de cadastros de produtores e restaurantes.</p>
+      <p className="admin-subtitle">Visão geral da plataforma e aprovação de cadastros.</p>
 
       <div className="admin-filter">
-        {STATUS_OPTIONS.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={option.value === status ? 'admin-filter-active' : ''}
-            onClick={() => setStatus(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
+        <button type="button" className={tab === 'overview' ? 'admin-filter-active' : ''} onClick={() => setTab('overview')}>
+          Visão geral
+        </button>
+        <button type="button" className={tab === 'queue' ? 'admin-filter-active' : ''} onClick={() => setTab('queue')}>
+          Fila de aprovação
+        </button>
       </div>
 
-      {error && <p className="form-error">{error}</p>}
+      {tab === 'overview' && <AdminMetrics />}
 
-      {loading ? (
-        <p>Carregando...</p>
-      ) : (
+      {tab === 'queue' && (
         <>
-          <section className="admin-section">
-            <h2>Produtores ({producers.length})</h2>
-            {producers.length === 0 && <p className="admin-empty">Nenhum cadastro neste status.</p>}
-            <div className="admin-list">
-              {producers.map((producer) => (
-                <RegistrationRow
-                  key={producer.id}
-                  title={producer.name}
-                  subtitle={PRODUCTION_TYPE_LABELS[producer.productionType] ?? producer.productionType}
-                  status={producer.status}
-                  busy={busyId === producer.id}
-                  note={producer.geocodingPending ? 'Endereço ainda não localizado no mapa.' : undefined}
-                  onApprove={() => handleApprove('producer', producer.id)}
-                  onReject={(reason) => handleReject('producer', producer.id, reason)}
-                  onSuspend={(reason) => handleSuspend('producer', producer.id, reason)}
-                />
-              ))}
-            </div>
-          </section>
+          <div className="admin-filter">
+            {STATUS_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={option.value === status ? 'admin-filter-active' : ''}
+                onClick={() => setStatus(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
 
-          <section className="admin-section">
-            <h2>Restaurantes ({restaurants.length})</h2>
-            {restaurants.length === 0 && <p className="admin-empty">Nenhum cadastro neste status.</p>}
-            <div className="admin-list">
-              {restaurants.map((restaurant) => (
-                <RegistrationRow
-                  key={restaurant.id}
-                  title={restaurant.corporateName}
-                  subtitle={CATEGORY_LABELS[restaurant.category] ?? restaurant.category}
-                  status={restaurant.status}
-                  busy={busyId === restaurant.id}
-                  onApprove={() => handleApprove('restaurant', restaurant.id)}
-                  onReject={(reason) => handleReject('restaurant', restaurant.id, reason)}
-                  onSuspend={(reason) => handleSuspend('restaurant', restaurant.id, reason)}
-                />
-              ))}
-            </div>
-          </section>
+          {error && <p className="form-error">{error}</p>}
+
+          {loading ? (
+            <p>Carregando...</p>
+          ) : (
+            <>
+              <section className="admin-section">
+                <h2>Produtores ({producers.length})</h2>
+                {producers.length === 0 && <p className="admin-empty">Nenhum cadastro neste status.</p>}
+                <div className="admin-list">
+                  {producers.map((producer) => (
+                    <RegistrationRow
+                      key={producer.id}
+                      title={producer.name}
+                      subtitle={PRODUCTION_TYPE_LABELS[producer.productionType] ?? producer.productionType}
+                      status={producer.status}
+                      busy={busyId === producer.id}
+                      note={producer.geocodingPending ? 'Endereço ainda não localizado no mapa.' : undefined}
+                      onApprove={() => handleApprove('producer', producer.id)}
+                      onReject={(reason) => handleReject('producer', producer.id, reason)}
+                      onSuspend={(reason) => handleSuspend('producer', producer.id, reason)}
+                    />
+                  ))}
+                </div>
+              </section>
+
+              <section className="admin-section">
+                <h2>Restaurantes ({restaurants.length})</h2>
+                {restaurants.length === 0 && <p className="admin-empty">Nenhum cadastro neste status.</p>}
+                <div className="admin-list">
+                  {restaurants.map((restaurant) => (
+                    <RegistrationRow
+                      key={restaurant.id}
+                      title={restaurant.corporateName}
+                      subtitle={CATEGORY_LABELS[restaurant.category] ?? restaurant.category}
+                      status={restaurant.status}
+                      busy={busyId === restaurant.id}
+                      onApprove={() => handleApprove('restaurant', restaurant.id)}
+                      onReject={(reason) => handleReject('restaurant', restaurant.id, reason)}
+                      onSuspend={(reason) => handleSuspend('restaurant', restaurant.id, reason)}
+                    />
+                  ))}
+                </div>
+              </section>
+            </>
+          )}
         </>
       )}
     </div>
@@ -215,7 +222,12 @@ function RegistrationRow({
             rows={2}
           />
           <div className="admin-row-actions">
-            <button type="button" onClick={submitReason} disabled={busy || !reason.trim()}>
+            <button
+              type="button"
+              className="admin-action-reject"
+              onClick={submitReason}
+              disabled={busy || !reason.trim()}
+            >
               Confirmar
             </button>
             <button type="button" className="admin-action-ghost" onClick={() => setReasonMode(null)} disabled={busy}>

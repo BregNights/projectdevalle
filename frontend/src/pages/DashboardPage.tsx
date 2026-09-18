@@ -1,23 +1,10 @@
 import { useEffect, useState } from 'react';
 import { apiClient, ApiError } from '../api/client';
+import { CATEGORY_LABELS, CERTIFICATION_LABELS, PRODUCTION_TYPE_LABELS } from '../api/labels';
 import type { ProducerResponse, RestaurantResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { AdminPanel } from '../components/AdminPanel';
-
-const PRODUCTION_TYPE_LABELS: Record<string, string> = {
-  FARMING: 'Agricultura',
-  FISHING: 'Pesca',
-  LIVESTOCK: 'Pecuária',
-  ARTISANAL_PROCESSING: 'Processamento artesanal',
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  FINE_DINING: 'Alta gastronomia',
-  BISTRO: 'Bistrô',
-  CHAIN: 'Rede',
-  OTHER: 'Outro',
-};
 
 export function DashboardPage() {
   const { token, claims } = useAuth();
@@ -89,12 +76,17 @@ export function DashboardPage() {
             <span>
               Tipo de produção: <strong>{PRODUCTION_TYPE_LABELS[producer.productionType] ?? producer.productionType}</strong>
             </span>
-            <span>
-              Certificações visíveis:{' '}
-              <strong>
-                {producer.visibleCertifications.length > 0 ? producer.visibleCertifications.join(', ') : 'nenhuma'}
-              </strong>
-            </span>
+          </div>
+          <div className="cert-chips">
+            {producer.visibleCertifications.length > 0 ? (
+              producer.visibleCertifications.map((cert) => (
+                <span className="cert-chip" key={cert}>
+                  ✓ {CERTIFICATION_LABELS[cert] ?? cert}
+                </span>
+              ))
+            ) : (
+              <span className="admin-empty">Nenhuma certificação verificada ainda.</span>
+            )}
           </div>
           {producer.geocodingPending && (
             <p className="form-notice">

@@ -95,3 +95,29 @@ export interface ProblemDetail {
   detail?: string;
   status?: number;
 }
+
+export interface RecentUser {
+  email: string;
+  role: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface AdminMetricsResponse {
+  totalProducers: number;
+  totalRestaurants: number;
+  totalUsers: number;
+  activeUsers: number;
+  producersByStatus: Record<string, number>;
+  restaurantsByStatus: Record<string, number>;
+  producersByProductionType: Record<string, number>;
+  restaurantsByCategory: Record<string, number>;
+  usersByRole: Record<string, number>;
+  producersGeocodingPending: number;
+  newProducersLast7Days: number;
+  newRestaurantsLast7Days: number;
+  newProducersLast30Days: number;
+  newRestaurantsLast30Days: number;
+  topProducerCities: Record<string, number>;
+  recentUsers: RecentUser[];
+}

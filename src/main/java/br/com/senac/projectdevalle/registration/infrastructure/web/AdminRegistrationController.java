@@ -13,6 +13,8 @@ import br.com.senac.projectdevalle.registration.application.admin.command.Suspen
 import br.com.senac.projectdevalle.registration.domain.common.RegistrationStatus;
 import br.com.senac.projectdevalle.registration.domain.producer.ProducerRepository;
 import br.com.senac.projectdevalle.registration.domain.restaurant.RestaurantRepository;
+import br.com.senac.projectdevalle.registration.infrastructure.persistence.RegistrationMetricsService;
+import br.com.senac.projectdevalle.registration.infrastructure.web.dto.AdminMetricsResponse;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.ProducerResponse;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.RejectRegistrationRequest;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.RestaurantResponse;
@@ -45,6 +47,7 @@ public class AdminRegistrationController {
     private final SuspendRegistrationService suspendRegistrationService;
     private final ProducerRepository producerRepository;
     private final RestaurantRepository restaurantRepository;
+    private final RegistrationMetricsService registrationMetricsService;
     private final Clock clock;
 
     public AdminRegistrationController(ApproveProducerRegistrationService approveProducerRegistrationService,
@@ -53,6 +56,7 @@ public class AdminRegistrationController {
                                         SuspendRegistrationService suspendRegistrationService,
                                         ProducerRepository producerRepository,
                                         RestaurantRepository restaurantRepository,
+                                        RegistrationMetricsService registrationMetricsService,
                                         Clock clock) {
         this.approveProducerRegistrationService = approveProducerRegistrationService;
         this.approveRestaurantRegistrationService = approveRestaurantRegistrationService;
@@ -60,7 +64,13 @@ public class AdminRegistrationController {
         this.suspendRegistrationService = suspendRegistrationService;
         this.producerRepository = producerRepository;
         this.restaurantRepository = restaurantRepository;
+        this.registrationMetricsService = registrationMetricsService;
         this.clock = clock;
+    }
+
+    @GetMapping("/metrics")
+    public AdminMetricsResponse metrics() {
+        return registrationMetricsService.collect();
     }
 
     // RF40 — lista de cadastros para a fila de aprovação do administrador, filtrável por status.
