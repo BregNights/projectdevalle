@@ -3,6 +3,7 @@ import { apiClient, ApiError } from '../api/client';
 import type { ProducerResponse, RestaurantResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
+import { AdminPanel } from '../components/AdminPanel';
 
 const PRODUCTION_TYPE_LABELS: Record<string, string> = {
   FARMING: 'Agricultura',
@@ -65,10 +66,14 @@ export function DashboardPage() {
     );
   }
 
-  if (claims.role === 'ADMINISTRATOR' || claims.role === 'LOGISTICS_OPERATOR') {
+  if (claims.role === 'ADMINISTRATOR') {
+    return <AdminPanel />;
+  }
+
+  if (claims.role === 'LOGISTICS_OPERATOR') {
     return (
       <div className="page">
-        <h1>Painel de {claims.role === 'ADMINISTRATOR' ? 'administração' : 'logística'}</h1>
+        <h1>Painel de logística</h1>
         <p>Ainda não existe uma interface para este perfil.</p>
       </div>
     );

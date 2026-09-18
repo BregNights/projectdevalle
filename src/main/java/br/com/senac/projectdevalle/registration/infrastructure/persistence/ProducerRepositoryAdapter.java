@@ -1,10 +1,12 @@
 package br.com.senac.projectdevalle.registration.infrastructure.persistence;
 
+import br.com.senac.projectdevalle.registration.domain.common.RegistrationStatus;
 import br.com.senac.projectdevalle.registration.domain.producer.Producer;
 import br.com.senac.projectdevalle.registration.domain.producer.ProducerRepository;
 import br.com.senac.projectdevalle.registration.infrastructure.persistence.mapper.ProducerEntityMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,5 +35,10 @@ class ProducerRepositoryAdapter implements ProducerRepository {
     @Override
     public Optional<Producer> findByUserId(UUID userId) {
         return jpaRepository.findByUserId(userId).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Producer> findByStatus(RegistrationStatus status) {
+        return jpaRepository.findByStatus(status).stream().map(mapper::toDomain).toList();
     }
 }
