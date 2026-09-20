@@ -2,6 +2,7 @@ package br.com.senac.projectdevalle.registration.infrastructure.security;
 
 import br.com.senac.projectdevalle.registration.application.user.port.GoogleIdTokenVerifierPort;
 import br.com.senac.projectdevalle.registration.application.user.port.SocialIdentity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -17,10 +18,17 @@ class GoogleIdTokenVerifierAdapter implements GoogleIdTokenVerifierPort {
     private static final String JWK_SET_URI = "https://www.googleapis.com/oauth2/v3/certs";
     private static final Set<String> VALID_ISSUERS = Set.of("accounts.google.com", "https://accounts.google.com");
 
-    private final JwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(JWK_SET_URI).build();
+    private final JwtDecoder jwtDecoder;
     private final String clientId;
 
+    @Autowired
     GoogleIdTokenVerifierAdapter(@Value("${security.oauth2.google.client-id}") String clientId) {
+        this(NimbusJwtDecoder.withJwkSetUri(JWK_SET_URI).build(), clientId);
+    }
+
+    // Construtor usado pelos testes para injetar um JwtDecoder falso, sem depender da rede do Google.
+    GoogleIdTokenVerifierAdapter(JwtDecoder jwtDecoder, String clientId) {
+        this.jwtDecoder = jwtDecoder;
         this.clientId = clientId;
     }
 
@@ -29,7 +37,9 @@ class GoogleIdTokenVerifierAdapter implements GoogleIdTokenVerifierPort {
         try {
             Jwt jwt = jwtDecoder.decode(idToken);
 
-            if (!VALID_ISSUERS.contains(jwt.getIssuer().toString())) {
+            // Lido como string bruta (não via jwt.getIssuer()): Google emite tokens com "iss" tanto
+            // como URL completa quanto como hostname puro, e o parsing para java.net.URL rejeita o segundo formato.
+            if (!VALID_ISSUERS.contains(jwt.getClaimAsString("iss"))) {
                 throw new IllegalArgumentException("Unexpected Google issuer");
             }
             if (!jwt.getAudience().contains(clientId)) {
