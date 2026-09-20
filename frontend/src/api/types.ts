@@ -190,6 +190,96 @@ export interface CatalogEntryResponse {
   distanceDurationMinutes: number | null;
 }
 
+export type BankAccountType = 'CHECKING' | 'SAVINGS';
+
+export interface BankDetailsResponse {
+  bankName: string;
+  agency: string;
+  account: string;
+  accountType: BankAccountType;
+  accountHolder: string;
+}
+
+export interface AddressResponse {
+  street: string;
+  number: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  complement: string | null;
+}
+
+export interface ProducerAccountResponse {
+  id: string;
+  name: string;
+  taxDocumentNumber: string;
+  originAddress: AddressResponse;
+  geocodingPending: boolean;
+  bankDetails: BankDetailsResponse | null;
+  deliveryAreaMunicipalities: string[];
+}
+
+export interface UpdateProducerProfileRequest {
+  name: string;
+}
+
+export interface UpdateBankDetailsRequest {
+  bankName: string;
+  agency: string;
+  account: string;
+  accountType: BankAccountType;
+  accountHolder: string;
+}
+
+export interface UpdateDeliveryAreaRequest {
+  municipalities: string[];
+}
+
+export interface UpdateOriginAddressRequest {
+  address: AddressInput;
+}
+
+export interface UpdateOriginAddressResponse {
+  geocodingPending: boolean;
+}
+
+export interface ContactResponse {
+  name: string;
+  role: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
+export interface DeliveryAddressResponse {
+  id: string;
+  label: string;
+  address: AddressResponse;
+  primary: boolean;
+  geocodingPending: boolean;
+}
+
+export interface RestaurantAccountResponse {
+  id: string;
+  corporateName: string;
+  cnpj: string;
+  category: EstablishmentCategory;
+  contact: ContactResponse;
+  deliveryAddresses: DeliveryAddressResponse[];
+}
+
+export interface UpdateRestaurantProfileRequest {
+  corporateName: string;
+  category: EstablishmentCategory;
+  contact: ContactInput;
+}
+
+export interface AddDeliveryAddressRequest {
+  label: string;
+  address: AddressInput;
+  primary: boolean;
+}
+
 export interface AdminMetricsResponse {
   totalProducers: number;
   totalRestaurants: number;

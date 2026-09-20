@@ -4,5 +4,5 @@ import br.com.senac.projectdevalle.shared.domain.vo.Address;
 
 import java.util.UUID;
 
-public record AddDeliveryAddressCommand(UUID restaurantId, String label, Address address, boolean primary) {
+public record AddDeliveryAddressCommand(UUID userId, String label, Address address, boolean primary) {
 }

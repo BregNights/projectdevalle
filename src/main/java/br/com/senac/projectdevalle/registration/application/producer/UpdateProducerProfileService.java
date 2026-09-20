@@ -18,8 +18,8 @@ public class UpdateProducerProfileService {
 
     @Transactional
     public void update(UpdateProducerProfileCommand command) {
-        Producer producer = producerRepository.findById(command.producerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Producer not found: " + command.producerId()));
+        Producer producer = producerRepository.findByUserId(command.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("No producer registered for current user"));
         producer.updateName(command.name());
         producerRepository.save(producer);
     }

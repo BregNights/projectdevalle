@@ -73,6 +73,23 @@ public class Restaurant implements Registrable {
         deliveryAddresses.replaceAll(address -> address.withPrimary(false));
     }
 
+    // RF05 — remoção de endereço de entrega; sempre deve sobrar ao menos um (RF30.2/aprovação exige isso),
+    // e se o removido era o principal, o próximo da lista assume automaticamente.
+    public void removeDeliveryAddress(UUID deliveryAddressId) {
+        DeliveryAddress toRemove = deliveryAddresses.stream()
+                .filter(address -> address.id().equals(deliveryAddressId))
+                .findFirst()
+                .orElseThrow(() -> new BusinessRuleViolationException(
+                        "Delivery address not found: " + deliveryAddressId));
+        if (deliveryAddresses.size() == 1) {
+            throw new BusinessRuleViolationException("At least one delivery address must remain");
+        }
+        deliveryAddresses.remove(toRemove);
+        if (toRemove.primary()) {
+            deliveryAddresses.set(0, deliveryAddresses.get(0).withPrimary(true));
+        }
+    }
+
     public void approve() {
         if (status != RegistrationStatus.PENDING) {
             throw new BusinessRuleViolationException("Only pending registrations can be approved");

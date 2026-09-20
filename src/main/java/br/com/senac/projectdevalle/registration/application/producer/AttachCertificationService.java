@@ -25,8 +25,8 @@ public class AttachCertificationService {
 
     @Transactional
     public void attach(AttachCertificationCommand command) {
-        Producer producer = producerRepository.findById(command.producerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Producer not found: " + command.producerId()));
+        Producer producer = producerRepository.findByUserId(command.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("No producer registered for current user"));
 
         Certification certification = Certification.attach(command.type(), command.proofUrl(), command.validUntil());
         producer.attachCertification(certification, clock);

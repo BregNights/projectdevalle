@@ -56,6 +56,53 @@ class RestaurantTest {
                 .containsExactly(filialId);
     }
 
+    // RF05
+    @Test
+    void removeDeliveryAddressRejectsWhenOnlyOneRemains() {
+        Restaurant restaurant = newRestaurant();
+        restaurant.addDeliveryAddress(DeliveryAddress.add("Matriz", validAddress(), null, false));
+        UUID matrizId = restaurant.deliveryAddresses().get(0).id();
+
+        assertThatThrownBy(() -> restaurant.removeDeliveryAddress(matrizId))
+                .isInstanceOf(BusinessRuleViolationException.class);
+    }
+
+    @Test
+    void removeDeliveryAddressRejectsUnknownId() {
+        Restaurant restaurant = newRestaurant();
+        restaurant.addDeliveryAddress(DeliveryAddress.add("Matriz", validAddress(), null, false));
+
+        assertThatThrownBy(() -> restaurant.removeDeliveryAddress(UUID.randomUUID()))
+                .isInstanceOf(BusinessRuleViolationException.class);
+    }
+
+    @Test
+    void removingNonPrimaryAddressKeepsCurrentPrimary() {
+        Restaurant restaurant = newRestaurant();
+        restaurant.addDeliveryAddress(DeliveryAddress.add("Matriz", validAddress(), null, false));
+        restaurant.addDeliveryAddress(DeliveryAddress.add("Filial", validAddress(), null, false));
+        UUID filialId = restaurant.deliveryAddresses().get(1).id();
+
+        restaurant.removeDeliveryAddress(filialId);
+
+        assertThat(restaurant.deliveryAddresses()).singleElement().matches(DeliveryAddress::primary);
+    }
+
+    @Test
+    void removingPrimaryAddressPromotesAnotherOneAutomatically() {
+        Restaurant restaurant = newRestaurant();
+        restaurant.addDeliveryAddress(DeliveryAddress.add("Matriz", validAddress(), null, false));
+        restaurant.addDeliveryAddress(DeliveryAddress.add("Filial", validAddress(), null, false));
+        UUID matrizId = restaurant.deliveryAddresses().get(0).id();
+
+        restaurant.removeDeliveryAddress(matrizId);
+
+        assertThat(restaurant.deliveryAddresses())
+                .singleElement()
+                .matches(DeliveryAddress::primary)
+                .extracting(DeliveryAddress::label).isEqualTo("Filial");
+    }
+
     @Test
     void approveSucceedsWithAtLeastOneAddress() {
         Restaurant restaurant = newRestaurant();

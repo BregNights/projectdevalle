@@ -4,5 +4,5 @@ import br.com.senac.projectdevalle.registration.domain.producer.BankDetails;
 
 import java.util.UUID;
 
-public record UpdateBankDetailsCommand(UUID producerId, BankDetails bankDetails) {
+public record UpdateBankDetailsCommand(UUID userId, BankDetails bankDetails) {
 }

@@ -2,6 +2,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Route, Routes } from 'react-router-dom';
 import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { AccountPage } from './pages/AccountPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { HomePage } from './pages/HomePage';
@@ -26,6 +27,7 @@ function AppRoutes() {
           <Route path="/cadastro/restaurante" element={<RegisterRestaurantPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/perfil" element={<AccountPage />} />
             <Route path="/ofertas" element={<MyOffersPage />} />
             <Route path="/catalogo" element={<CatalogPage />} />
           </Route>

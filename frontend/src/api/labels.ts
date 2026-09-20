@@ -63,6 +63,11 @@ export const OFFER_STATUS_LABELS: Record<string, string> = {
   REMOVED: 'Removida',
 };
 
+export const BANK_ACCOUNT_TYPE_LABELS: Record<string, string> = {
+  CHECKING: 'Conta corrente',
+  SAVINGS: 'Poupança',
+};
+
 export const DAY_OF_WEEK_LABELS: Record<string, string> = {
   MONDAY: 'Segunda-feira',
   TUESDAY: 'Terça-feira',

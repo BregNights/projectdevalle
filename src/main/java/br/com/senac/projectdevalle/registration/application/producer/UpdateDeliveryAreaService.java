@@ -18,8 +18,8 @@ public class UpdateDeliveryAreaService {
 
     @Transactional
     public void update(UpdateDeliveryAreaCommand command) {
-        Producer producer = producerRepository.findById(command.producerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Producer not found: " + command.producerId()));
+        Producer producer = producerRepository.findByUserId(command.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("No producer registered for current user"));
         producer.updateDeliveryArea(command.deliveryArea());
         producerRepository.save(producer);
     }

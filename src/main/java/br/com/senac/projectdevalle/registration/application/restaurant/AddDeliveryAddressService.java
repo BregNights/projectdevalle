@@ -24,15 +24,21 @@ public class AddDeliveryAddressService {
     }
 
     @Transactional
-    public void add(AddDeliveryAddressCommand command) {
-        Restaurant restaurant = restaurantRepository.findById(command.restaurantId())
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found: " + command.restaurantId()));
+    public DeliveryAddress add(AddDeliveryAddressCommand command) {
+        Restaurant restaurant = restaurantRepository.findByUserId(command.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("No restaurant registered for current user"));
 
         Coordinates coordinates = geocodeBestEffort(command.address());
-        restaurant.addDeliveryAddress(DeliveryAddress.add(command.label(), command.address(), coordinates,
-                command.primary()));
+        DeliveryAddress deliveryAddress = DeliveryAddress.add(command.label(), command.address(), coordinates,
+                command.primary());
+        restaurant.addDeliveryAddress(deliveryAddress);
 
         restaurantRepository.save(restaurant);
+
+        return restaurant.deliveryAddresses().stream()
+                .filter(address -> address.id().equals(deliveryAddress.id()))
+                .findFirst()
+                .orElseThrow();
     }
 
     private Coordinates geocodeBestEffort(Address address) {

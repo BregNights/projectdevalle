@@ -128,6 +128,12 @@ public class Producer implements Registrable {
         certifications.add(certification);
     }
 
+    // RF05 — corrige o endereço de origem; a geocodificação anterior é descartada
+    // (o chamador deve fornecer newOriginLocation já com as coordenadas recalculadas ou pendentes).
+    public void updateOriginAddress(OriginLocation newOriginLocation) {
+        this.originLocation = newOriginLocation;
+    }
+
     // RF05
     public void updateBankDetails(BankDetails newBankDetails) {
         this.bankDetails = newBankDetails;

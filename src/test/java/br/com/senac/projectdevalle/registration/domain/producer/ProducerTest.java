@@ -98,6 +98,18 @@ class ProducerTest {
                 .isInstanceOf(CertificationWithoutValidProofException.class);
     }
 
+    // RF05
+    @Test
+    void updateOriginAddressReplacesAddressAndResetsCoordinates() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+        Address newAddress = new Address("Rua Nova", "50", "Bairro Novo", "Itajai", "SC", "88300-000", null);
+
+        producer.updateOriginAddress(OriginLocation.withoutCoordinates(newAddress));
+
+        assertThat(producer.originLocation().address()).isEqualTo(newAddress);
+        assertThat(producer.isGeocodingPending()).isTrue();
+    }
+
     @Test
     void visibleCertificationsOnlyIncludeValidOnes() {
         Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));

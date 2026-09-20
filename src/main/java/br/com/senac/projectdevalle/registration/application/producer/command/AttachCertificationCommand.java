@@ -6,7 +6,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record AttachCertificationCommand(
-        UUID producerId,
+        UUID userId,
         CertificationType type,
         String proofUrl,
         LocalDate validUntil

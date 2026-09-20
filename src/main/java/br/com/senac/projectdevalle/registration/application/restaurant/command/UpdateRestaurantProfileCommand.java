@@ -6,7 +6,7 @@ import br.com.senac.projectdevalle.registration.domain.restaurant.EstablishmentC
 import java.util.UUID;
 
 public record UpdateRestaurantProfileCommand(
-        UUID restaurantId,
+        UUID userId,
         String corporateName,
         EstablishmentCategory category,
         Contact contact

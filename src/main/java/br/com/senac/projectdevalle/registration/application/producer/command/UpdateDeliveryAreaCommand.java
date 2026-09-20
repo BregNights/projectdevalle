@@ -4,5 +4,5 @@ import br.com.senac.projectdevalle.registration.domain.producer.DeliveryArea;
 
 import java.util.UUID;
 
-public record UpdateDeliveryAreaCommand(UUID producerId, DeliveryArea deliveryArea) {
+public record UpdateDeliveryAreaCommand(UUID userId, DeliveryArea deliveryArea) {
 }
