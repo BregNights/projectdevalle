@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { apiClient, ApiError } from '../api/client';
 import type {
   ProducerRegistrationResponse,
@@ -8,6 +8,8 @@ import type {
   SupportingDocumentType,
   TaxDocumentType,
 } from '../api/types';
+import { generateRandomPassword } from '../auth/socialLogin';
+import type { SocialSignupState } from '../auth/socialSignup';
 
 const PRODUCTION_TYPES: { value: ProductionType; label: string }[] = [
   { value: 'FARMING', label: 'Agricultura' },
@@ -62,7 +64,14 @@ const INITIAL_STATE: FormState = {
 };
 
 export function RegisterProducerPage() {
-  const [form, setForm] = useState<FormState>(INITIAL_STATE);
+  const location = useLocation();
+  const socialSignup = location.state as SocialSignupState | undefined;
+
+  const [form, setForm] = useState<FormState>(() => ({
+    ...INITIAL_STATE,
+    email: socialSignup?.verifiedEmail ?? '',
+  }));
+  const [socialPassword] = useState(() => (socialSignup ? generateRandomPassword() : ''));
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<ProducerRegistrationResponse | null>(null);
@@ -78,7 +87,7 @@ export function RegisterProducerPage() {
     try {
       const request: RegisterProducerRequest = {
         email: form.email,
-        password: form.password,
+        password: socialSignup ? socialPassword : form.password,
         name: form.name,
         taxDocumentType: form.taxDocumentType,
         taxDocumentNumber: form.taxDocumentNumber,
@@ -131,18 +140,28 @@ export function RegisterProducerPage() {
           <legend>Acesso</legend>
           <label>
             E-mail
-            <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required />
-          </label>
-          <label>
-            Senha
             <input
-              type="password"
-              minLength={8}
-              value={form.password}
-              onChange={(e) => update('password', e.target.value)}
+              type="email"
+              value={form.email}
+              onChange={(e) => update('email', e.target.value)}
+              readOnly={Boolean(socialSignup)}
               required
             />
           </label>
+          {socialSignup ? (
+            <p className="form-notice">E-mail verificado via Google.</p>
+          ) : (
+            <label>
+              Senha
+              <input
+                type="password"
+                minLength={8}
+                value={form.password}
+                onChange={(e) => update('password', e.target.value)}
+                required
+              />
+            </label>
+          )}
         </fieldset>
 
         <fieldset>

@@ -2,12 +2,17 @@ package br.com.senac.projectdevalle.registration.infrastructure.web;
 
 import br.com.senac.projectdevalle.registration.application.user.AuthenticateUserService;
 import br.com.senac.projectdevalle.registration.application.user.RecoverAccessService;
+import br.com.senac.projectdevalle.registration.application.user.SocialAuthenticationResult;
+import br.com.senac.projectdevalle.registration.application.user.SocialAuthenticationService;
 import br.com.senac.projectdevalle.registration.application.user.command.AuthenticateUserCommand;
 import br.com.senac.projectdevalle.registration.application.user.command.RequestPasswordResetCommand;
 import br.com.senac.projectdevalle.registration.application.user.command.ResetPasswordCommand;
+import br.com.senac.projectdevalle.registration.application.user.command.SocialLoginCommand;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.LoginRequest;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.RequestPasswordResetRequest;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.ResetPasswordRequest;
+import br.com.senac.projectdevalle.registration.infrastructure.web.dto.SocialLoginRequest;
+import br.com.senac.projectdevalle.registration.infrastructure.web.dto.SocialLoginResponse;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.TokenResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -27,11 +32,14 @@ public class AuthenticationController {
 
     private final AuthenticateUserService authenticateUserService;
     private final RecoverAccessService recoverAccessService;
+    private final SocialAuthenticationService socialAuthenticationService;
 
     public AuthenticationController(AuthenticateUserService authenticateUserService,
-                                     RecoverAccessService recoverAccessService) {
+                                     RecoverAccessService recoverAccessService,
+                                     SocialAuthenticationService socialAuthenticationService) {
         this.authenticateUserService = authenticateUserService;
         this.recoverAccessService = recoverAccessService;
+        this.socialAuthenticationService = socialAuthenticationService;
     }
 
     @PostMapping("/login")
@@ -39,6 +47,22 @@ public class AuthenticationController {
         String accessToken = authenticateUserService.authenticate(
                 new AuthenticateUserCommand(request.email(), request.password()));
         return new TokenResponse(accessToken);
+    }
+
+    @PostMapping("/google")
+    public SocialLoginResponse loginWithGoogle(@Valid @RequestBody SocialLoginRequest request) {
+        return toResponse(socialAuthenticationService.authenticateWithGoogle(
+                new SocialLoginCommand(request.idToken())));
+    }
+
+    private SocialLoginResponse toResponse(SocialAuthenticationResult result) {
+        return switch (result) {
+            case SocialAuthenticationResult.Authenticated authenticated ->
+                    SocialLoginResponse.authenticated(authenticated.accessToken());
+            case SocialAuthenticationResult.RegistrationRequired registrationRequired ->
+                    SocialLoginResponse.registrationRequired(
+                            registrationRequired.email(), registrationRequired.displayName());
+        };
     }
 
     // RF06 — o token de reset é entregue por e-mail/WhatsApp pelo futuro módulo de notificações

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient, ApiError } from '../api/client';
 import type { TokenResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { SocialLoginButtons } from '../auth/SocialLoginButtons';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -44,6 +45,7 @@ export function LoginPage() {
           {submitting ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
+      <SocialLoginButtons />
     </div>
   );
 }

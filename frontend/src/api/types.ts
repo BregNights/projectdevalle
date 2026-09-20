@@ -90,6 +90,19 @@ export interface TokenResponse {
   accessToken: string;
 }
 
+export type SocialLoginStatus = 'AUTHENTICATED' | 'REGISTRATION_REQUIRED';
+
+export interface SocialLoginRequest {
+  idToken: string;
+}
+
+export interface SocialLoginResponse {
+  status: SocialLoginStatus;
+  accessToken: string | null;
+  email: string | null;
+  displayName: string | null;
+}
+
 export interface ProblemDetail {
   title?: string;
   detail?: string;
@@ -101,6 +114,80 @@ export interface RecentUser {
   role: string;
   active: boolean;
   createdAt: string;
+}
+
+export type ProductCategory =
+  | 'VEGETABLES'
+  | 'FRUITS'
+  | 'FISH'
+  | 'MEAT_POULTRY'
+  | 'DAIRY'
+  | 'GRAINS_CEREALS'
+  | 'PROCESSED'
+  | 'OTHER';
+
+export type MeasurementUnit = 'KILOGRAM' | 'GRAM' | 'LITER' | 'UNIT' | 'DOZEN' | 'BOX';
+
+export type RecurrenceType = 'RECURRING' | 'ONE_TIME';
+
+export type OfferStatus = 'ACTIVE' | 'PAUSED' | 'SOLD_OUT' | 'REMOVED';
+
+export type DayOfWeekName =
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
+
+export interface OfferResponse {
+  id: string;
+  producerId: string;
+  productName: string;
+  category: ProductCategory;
+  unit: MeasurementUnit;
+  price: number;
+  quantityAvailable: number;
+  recurrenceType: RecurrenceType;
+  recurrenceDayOfWeek: DayOfWeekName | null;
+  availabilityFrom: string | null;
+  availabilityUntil: string | null;
+  photoUrls: string[];
+  status: OfferStatus;
+}
+
+export interface PublishOfferRequest {
+  productName: string;
+  category: ProductCategory;
+  unit: MeasurementUnit;
+  price: number;
+  quantityAvailable: number;
+  recurrenceType: RecurrenceType;
+  recurrenceDayOfWeek?: DayOfWeekName | null;
+  availabilityFrom?: string | null;
+  availabilityUntil?: string | null;
+  photoUrls?: string[];
+}
+
+export interface UpdateOfferDetailsRequest {
+  price: number;
+  availabilityFrom?: string | null;
+  availabilityUntil?: string | null;
+  photoUrls?: string[];
+}
+
+export interface UpdateOfferQuantityRequest {
+  quantityAvailable: number;
+}
+
+export interface CatalogEntryResponse {
+  offer: OfferResponse;
+  producerId: string;
+  producerName: string | null;
+  producerCity: string | null;
+  distanceKilometers: number | null;
+  distanceDurationMinutes: number | null;
 }
 
 export interface AdminMetricsResponse {

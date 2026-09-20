@@ -19,6 +19,10 @@ export function NavBar() {
         {token && claims ? (
           <>
             <Link to="/dashboard">Meu cadastro</Link>
+            {claims.role === 'PRODUCER' && <Link to="/ofertas">Minhas ofertas</Link>}
+            {(claims.role === 'PRODUCER' || claims.role === 'RESTAURANT' || claims.role === 'ADMINISTRATOR') && (
+              <Link to="/catalogo">Catálogo</Link>
+            )}
             <span className="navbar-role">{claims.role}</span>
             <button type="button" onClick={handleLogout}>
               Sair

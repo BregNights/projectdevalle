@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { apiClient, ApiError } from '../api/client';
 import type { EstablishmentCategory, RegisterRestaurantRequest, RestaurantRegistrationResponse } from '../api/types';
+import { generateRandomPassword } from '../auth/socialLogin';
+import type { SocialSignupState } from '../auth/socialSignup';
 
 const CATEGORIES: { value: EstablishmentCategory; label: string }[] = [
   { value: 'FINE_DINING', label: 'Alta gastronomia' },
@@ -51,7 +53,14 @@ const INITIAL_STATE: FormState = {
 };
 
 export function RegisterRestaurantPage() {
-  const [form, setForm] = useState<FormState>(INITIAL_STATE);
+  const location = useLocation();
+  const socialSignup = location.state as SocialSignupState | undefined;
+
+  const [form, setForm] = useState<FormState>(() => ({
+    ...INITIAL_STATE,
+    email: socialSignup?.verifiedEmail ?? '',
+  }));
+  const [socialPassword] = useState(() => (socialSignup ? generateRandomPassword() : ''));
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<RestaurantRegistrationResponse | null>(null);
@@ -67,7 +76,7 @@ export function RegisterRestaurantPage() {
     try {
       const request: RegisterRestaurantRequest = {
         email: form.email,
-        password: form.password,
+        password: socialSignup ? socialPassword : form.password,
         corporateName: form.corporateName,
         cnpj: form.cnpj,
         category: form.category,
@@ -117,18 +126,28 @@ export function RegisterRestaurantPage() {
           <legend>Acesso</legend>
           <label>
             E-mail
-            <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} required />
-          </label>
-          <label>
-            Senha
             <input
-              type="password"
-              minLength={8}
-              value={form.password}
-              onChange={(e) => update('password', e.target.value)}
+              type="email"
+              value={form.email}
+              onChange={(e) => update('email', e.target.value)}
+              readOnly={Boolean(socialSignup)}
               required
             />
           </label>
+          {socialSignup ? (
+            <p className="form-notice">E-mail verificado via Google.</p>
+          ) : (
+            <label>
+              Senha
+              <input
+                type="password"
+                minLength={8}
+                value={form.password}
+                onChange={(e) => update('password', e.target.value)}
+                required
+              />
+            </label>
+          )}
         </fieldset>
 
         <fieldset>

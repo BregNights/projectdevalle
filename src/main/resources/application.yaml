@@ -10,6 +10,11 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+security:
+  oauth2:
+    google:
+      client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
+
 app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}

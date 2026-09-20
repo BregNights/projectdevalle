@@ -585,6 +585,49 @@ button[type='submit']:disabled {
   font-weight: 600;
 }
 
+/* ---------- Login social ---------- */
+
+.social-login {
+  max-width: 640px;
+  margin: 1.25rem auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.social-login-divider {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.social-signup-choices {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.social-signup-choices button {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.social-signup-choices button:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
 /* ---------- Status badge ---------- */
 
 .status-badge {
@@ -958,6 +1001,88 @@ button[type='submit']:disabled {
 
 .metric-table tr:last-child td {
   border-bottom: none;
+}
+
+/* ---------- Ofertas e catálogo ---------- */
+
+.card-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2.5rem;
+}
+
+.catalog-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  align-items: end;
+  gap: 1.25rem;
+}
+
+.catalog-filters button {
+  align-self: end;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 1.2rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.catalog-filters button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.catalog-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.catalog-card-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.offer-quantity-field {
+  margin-top: 0.9rem;
+  max-width: 220px;
+}
+
+.offer-status-active {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.offer-status-paused,
+.offer-status-sold_out {
+  background: var(--neutral-bg);
+  color: var(--neutral-text);
+}
+
+.offer-status-removed {
+  background: var(--danger-bg);
+  color: var(--danger);
 }
 
 @media (max-width: 640px) {
