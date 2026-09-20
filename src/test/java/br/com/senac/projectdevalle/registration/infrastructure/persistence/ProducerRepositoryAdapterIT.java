@@ -8,10 +8,15 @@ import br.com.senac.projectdevalle.registration.domain.producer.ProducerReposito
 import br.com.senac.projectdevalle.registration.domain.producer.ProductionType;
 import br.com.senac.projectdevalle.registration.domain.producer.SupportingDocument;
 import br.com.senac.projectdevalle.registration.domain.producer.SupportingDocumentType;
+import br.com.senac.projectdevalle.registration.domain.user.PasswordHasher;
+import br.com.senac.projectdevalle.registration.domain.user.Role;
+import br.com.senac.projectdevalle.registration.domain.user.User;
+import br.com.senac.projectdevalle.registration.domain.user.UserRepository;
 import br.com.senac.projectdevalle.support.AbstractIntegrationTest;
 import br.com.senac.projectdevalle.shared.domain.vo.Address;
 import br.com.senac.projectdevalle.shared.domain.vo.Coordinates;
 import br.com.senac.projectdevalle.shared.domain.vo.Cpf;
+import br.com.senac.projectdevalle.shared.domain.vo.Email;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,9 +33,16 @@ class ProducerRepositoryAdapterIT extends AbstractIntegrationTest {
     @Autowired
     private ProducerRepository producerRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordHasher passwordHasher;
+
     @Test
     void savesAndReloadsProducerWithChildCollections() {
-        Producer producer = Producer.register(UUID.randomUUID(), "Joao Pescador", new Cpf("12345678909"),
+        UUID userId = aRegisteredUserId("joao.pescador@example.com");
+        Producer producer = Producer.register(userId, "Joao Pescador", new Cpf("12345678909"),
                 ProductionType.FISHING, validOriginLocation(), List.of(validSupportingDocument()));
         producer.attachCertification(
                 Certification.attach(CertificationType.GOOD_FISHING_PRACTICES, "https://proof", LocalDate.of(2030, 1, 1)),
@@ -50,7 +62,8 @@ class ProducerRepositoryAdapterIT extends AbstractIntegrationTest {
     @Test
     void persistsGeocodingPendingWhenCoordinatesAreAbsent() {
         Address address = new Address("Rua Sem Nome", "1", "Centro", "Blumenau", "SC", "89010-000", null);
-        Producer producer = Producer.register(UUID.randomUUID(), "Ana", new Cpf("12345678909"),
+        UUID userId = aRegisteredUserId("ana@example.com");
+        Producer producer = Producer.register(userId, "Ana", new Cpf("12345678909"),
                 ProductionType.FARMING, OriginLocation.withoutCoordinates(address), List.of(validSupportingDocument()));
 
         producerRepository.save(producer);
@@ -59,6 +72,11 @@ class ProducerRepositoryAdapterIT extends AbstractIntegrationTest {
 
         assertThat(reloaded).isPresent();
         assertThat(reloaded.get().isGeocodingPending()).isTrue();
+    }
+
+    private UUID aRegisteredUserId(String email) {
+        User user = User.register(new Email(email), "S3nhaForte!", Role.PRODUCER, passwordHasher);
+        return userRepository.save(user).id();
     }
 
     private static OriginLocation validOriginLocation() {

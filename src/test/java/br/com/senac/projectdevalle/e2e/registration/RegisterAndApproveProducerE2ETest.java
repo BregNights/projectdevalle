@@ -51,7 +51,7 @@ class RegisterAndApproveProducerE2ETest extends AbstractIntegrationTest {
                 TaxDocumentType.CPF,
                 "12345678909",
                 ProductionType.FISHING,
-                new AddressRequest("Rua das Flores", "100", "Centro", "Itajai", "SC", "88301-000", null),
+                new AddressRequest("Rua das Flores", "100", "Centro", "Itajaí", "SC", "88301-000", null),
                 List.of(new SupportingDocumentRequest(SupportingDocumentType.FISHING_LICENSE, "REG-12345",
                         "https://files/license.pdf")));
 
