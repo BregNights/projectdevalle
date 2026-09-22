@@ -48,6 +48,14 @@ public class ProducerDirectoryAdapter implements ProducerDirectoryPort {
     }
 
     @Override
+    public boolean isListable(UUID producerId) {
+        return producerRepository.findById(producerId)
+                .map(producer -> producer.isEligibleToOperate()
+                        && coverageAreaPolicy.covers(producer.originLocation().address()))
+                .orElse(false);
+    }
+
+    @Override
     public Set<UUID> findEligibleProducerIds(Set<String> cities, String certificationType) {
         Set<String> normalizedCities = cities == null ? null
                 : cities.stream().map(PlaceNames::normalize).collect(Collectors.toSet());

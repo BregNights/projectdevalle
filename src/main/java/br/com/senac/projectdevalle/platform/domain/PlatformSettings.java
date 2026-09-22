@@ -10,31 +10,29 @@ import java.util.Optional;
 import java.util.Set;
 
 // RF43 — parâmetros globais da plataforma, configuráveis pela administração:
-// comissão (RN13), regiões/municípios atendidos (RN02) e categorias de produto habilitadas.
+// comissão (RN13), multa de cancelamento (RN10), regiões/municípios atendidos (RN02) e categorias habilitadas.
 public final class PlatformSettings {
 
-    private static final BigDecimal MAX_COMMISSION = BigDecimal.valueOf(100);
+    private static final BigDecimal MAX_PERCENTAGE = BigDecimal.valueOf(100);
 
     private final BigDecimal commissionPercentage;
+    private final BigDecimal cancellationPenaltyPercentage;
     private final List<CoverageRegion> coverageRegions;
     private final Set<String> enabledProductCategories;
 
-    private PlatformSettings(BigDecimal commissionPercentage, List<CoverageRegion> coverageRegions,
-                             Set<String> enabledProductCategories) {
+    private PlatformSettings(BigDecimal commissionPercentage, BigDecimal cancellationPenaltyPercentage,
+                             List<CoverageRegion> coverageRegions, Set<String> enabledProductCategories) {
         this.commissionPercentage = commissionPercentage;
+        this.cancellationPenaltyPercentage = cancellationPenaltyPercentage;
         this.coverageRegions = coverageRegions;
         this.enabledProductCategories = enabledProductCategories;
     }
 
-    public static PlatformSettings of(BigDecimal commissionPercentage, List<CoverageRegion> coverageRegions,
-                                      Set<String> enabledProductCategories) {
-        if (commissionPercentage == null || commissionPercentage.signum() < 0
-                || commissionPercentage.compareTo(MAX_COMMISSION) >= 0) {
-            throw new IllegalArgumentException("commissionPercentage must be between 0 and 100 (exclusive)");
-        }
-        if (commissionPercentage.stripTrailingZeros().scale() > 2) {
-            throw new IllegalArgumentException("commissionPercentage must have at most 2 decimal places");
-        }
+    public static PlatformSettings of(BigDecimal commissionPercentage, BigDecimal cancellationPenaltyPercentage,
+                                      List<CoverageRegion> coverageRegions, Set<String> enabledProductCategories) {
+        requirePercentage(commissionPercentage, "commissionPercentage");
+        // RN10 — a multa é proporcional ao valor do pedido; 100% significaria cobrar o pedido inteiro.
+        requirePercentage(cancellationPenaltyPercentage, "cancellationPenaltyPercentage");
         if (coverageRegions == null || coverageRegions.isEmpty()) {
             throw new IllegalArgumentException("at least one coverage region is required");
         }
@@ -53,8 +51,17 @@ public final class PlatformSettings {
         if (enabledProductCategories == null || enabledProductCategories.isEmpty()) {
             throw new IllegalArgumentException("at least one product category must be enabled");
         }
-        return new PlatformSettings(commissionPercentage, List.copyOf(coverageRegions),
+        return new PlatformSettings(commissionPercentage, cancellationPenaltyPercentage, List.copyOf(coverageRegions),
                 Set.copyOf(new LinkedHashSet<>(enabledProductCategories)));
+    }
+
+    private static void requirePercentage(BigDecimal value, String name) {
+        if (value == null || value.signum() < 0 || value.compareTo(MAX_PERCENTAGE) >= 0) {
+            throw new IllegalArgumentException(name + " must be between 0 and 100 (exclusive)");
+        }
+        if (value.stripTrailingZeros().scale() > 2) {
+            throw new IllegalArgumentException(name + " must have at most 2 decimal places");
+        }
     }
 
     // RN02 — município está dentro da área atendida?
@@ -73,6 +80,10 @@ public final class PlatformSettings {
 
     public BigDecimal commissionPercentage() {
         return commissionPercentage;
+    }
+
+    public BigDecimal cancellationPenaltyPercentage() {
+        return cancellationPenaltyPercentage;
     }
 
     public List<CoverageRegion> coverageRegions() {

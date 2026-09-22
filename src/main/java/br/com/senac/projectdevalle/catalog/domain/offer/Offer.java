@@ -1,6 +1,7 @@
 package br.com.senac.projectdevalle.catalog.domain.offer;
 
 import br.com.senac.projectdevalle.catalog.domain.offer.exception.ExpiredAvailabilityWindowException;
+import br.com.senac.projectdevalle.catalog.domain.offer.exception.InsufficientStockException;
 import br.com.senac.projectdevalle.catalog.domain.offer.exception.InvalidOfferTransitionException;
 import br.com.senac.projectdevalle.catalog.domain.offer.exception.MissingAvailabilityDeadlineException;
 
@@ -127,6 +128,26 @@ public class Offer {
         } else if (status == OfferStatus.SOLD_OUT) {
             this.status = OfferStatus.ACTIVE;
         }
+    }
+
+    // Pedidos (módulo 1.4) — baixa de estoque quando o produtor confirma um pedido (RN04: zerou → SOLD_OUT).
+    public void reserve(BigDecimal quantity) {
+        requireNotRemoved("reserve stock of");
+        if (quantity == null || quantity.signum() <= 0) {
+            throw new IllegalArgumentException("quantity must be greater than zero");
+        }
+        if (quantityAvailable.compareTo(quantity) < 0) {
+            throw new InsufficientStockException(productName, quantityAvailable, quantity);
+        }
+        updateQuantity(quantityAvailable.subtract(quantity));
+    }
+
+    // Devolução ao estoque quando um pedido confirmado é cancelado; oferta removida não recebe estoque de volta.
+    public void release(BigDecimal quantity) {
+        if (status == OfferStatus.REMOVED || quantity == null || quantity.signum() <= 0) {
+            return;
+        }
+        updateQuantity(quantityAvailable.add(quantity));
     }
 
     public boolean isExpired(Clock clock) {

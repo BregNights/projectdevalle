@@ -48,25 +48,29 @@ class JdbcPlatformSettingsRepository implements PlatformSettingsRepository {
     }
 
     private PlatformSettings load() {
-        record Row(BigDecimal commission, Set<String> categories) {
+        record Row(BigDecimal commission, BigDecimal penalty, Set<String> categories) {
         }
         Row row = jdbcTemplate.queryForObject(
-                "SELECT commission_percentage, enabled_product_categories FROM platform_settings WHERE id = ?",
+                "SELECT commission_percentage, cancellation_penalty_percentage, enabled_product_categories "
+                        + "FROM platform_settings WHERE id = ?",
                 (resultSet, rowNumber) -> new Row(resultSet.getBigDecimal("commission_percentage"),
+                        resultSet.getBigDecimal("cancellation_penalty_percentage"),
                         toSet(resultSet.getArray("enabled_product_categories"))),
                 SETTINGS_ROW_ID);
-        return PlatformSettings.of(row.commission(), loadRegions(), row.categories());
+        return PlatformSettings.of(row.commission(), row.penalty(), loadRegions(), row.categories());
     }
 
     @Override
     public PlatformSettings save(PlatformSettings settings) {
         jdbcTemplate.update(connection -> {
             var statement = connection.prepareStatement("UPDATE platform_settings SET commission_percentage = ?, "
-                    + "enabled_product_categories = ?, updated_at = now() WHERE id = ?");
+                    + "cancellation_penalty_percentage = ?, enabled_product_categories = ?, updated_at = now() "
+                    + "WHERE id = ?");
             statement.setBigDecimal(1, settings.commissionPercentage());
-            statement.setArray(2, connection.createArrayOf("text",
+            statement.setBigDecimal(2, settings.cancellationPenaltyPercentage());
+            statement.setArray(3, connection.createArrayOf("text",
                     settings.enabledProductCategories().stream().sorted().toArray()));
-            statement.setInt(3, SETTINGS_ROW_ID);
+            statement.setInt(4, SETTINGS_ROW_ID);
             return statement;
         });
         jdbcTemplate.update("DELETE FROM platform_coverage_cities");

@@ -1,8 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { useCart } from '../cart/CartContext';
 
 export function NavBar() {
   const { token, claims, logout } = useAuth();
+  const cart = useCart();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -25,6 +27,13 @@ export function NavBar() {
             {claims.role === 'PRODUCER' && <Link to="/ofertas">Minhas ofertas</Link>}
             {(claims.role === 'PRODUCER' || claims.role === 'RESTAURANT' || claims.role === 'ADMINISTRATOR') && (
               <Link to="/catalogo">Catálogo</Link>
+            )}
+            {(claims.role === 'PRODUCER' || claims.role === 'RESTAURANT') && <Link to="/pedidos">Pedidos</Link>}
+            {claims.role === 'RESTAURANT' && (
+              <>
+                <Link to="/pedidos-recorrentes">Recorrentes</Link>
+                <Link to="/carrinho">Carrinho{cart.items.length > 0 ? ` (${cart.items.length})` : ''}</Link>
+              </>
             )}
             <span className="navbar-role">{claims.role}</span>
             <button type="button" onClick={handleLogout}>

@@ -38,6 +38,7 @@ public class PlatformSettingsController {
     public PlatformSettingsResponse update(@Valid @RequestBody UpdatePlatformSettingsRequest request) {
         PlatformSettings updated = platformSettingsService.update(new UpdatePlatformSettingsCommand(
                 request.commissionPercentage(),
+                request.cancellationPenaltyPercentage(),
                 request.coverageRegions().stream().map(CoverageRegionPayload::toDomain).toList(),
                 request.enabledProductCategories().stream().map(ProductCategory::name).collect(Collectors.toSet())));
         return PlatformSettingsResponse.from(updated);

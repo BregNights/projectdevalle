@@ -1,5 +1,6 @@
 package br.com.senac.projectdevalle.catalog.domain.offer;
 
+import br.com.senac.projectdevalle.catalog.domain.offer.exception.InsufficientStockException;
 import br.com.senac.projectdevalle.catalog.domain.offer.exception.InvalidOfferTransitionException;
 import br.com.senac.projectdevalle.catalog.domain.offer.exception.MissingAvailabilityDeadlineException;
 import org.junit.jupiter.api.Test;
@@ -135,6 +136,39 @@ class OfferTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Recurrence(RecurrenceType.ONE_TIME, DayOfWeek.MONDAY))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    // Pedidos — confirmar um pedido baixa o estoque; zerar leva a SOLD_OUT (RN04).
+    @Test
+    void reservingStockDecrementsAndSellsOutAtZero() {
+        Offer offer = publishNonPerishable(BigDecimal.TEN);
+
+        offer.reserve(BigDecimal.valueOf(4));
+        assertThat(offer.quantityAvailable()).isEqualByComparingTo("6");
+
+        offer.reserve(BigDecimal.valueOf(6));
+        assertThat(offer.status()).isEqualTo(OfferStatus.SOLD_OUT);
+    }
+
+    @Test
+    void reservingMoreThanAvailableFails() {
+        Offer offer = publishNonPerishable(BigDecimal.ONE);
+
+        assertThatThrownBy(() -> offer.reserve(BigDecimal.TEN)).isInstanceOf(InsufficientStockException.class);
+        assertThat(offer.quantityAvailable()).isEqualByComparingTo("1");
+    }
+
+    @Test
+    void releasingStockRestoresQuantityAndReactivatesButIgnoresRemovedOffers() {
+        Offer offer = publishNonPerishable(BigDecimal.ONE);
+        offer.reserve(BigDecimal.ONE);
+
+        offer.release(BigDecimal.ONE);
+        assertThat(offer.status()).isEqualTo(OfferStatus.ACTIVE);
+
+        offer.remove();
+        offer.release(BigDecimal.TEN);
+        assertThat(offer.quantityAvailable()).isEqualByComparingTo("1");
     }
 
     private static Offer publishNonPerishable(BigDecimal quantity) {

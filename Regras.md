@@ -242,6 +242,27 @@
 - **RN60** — Uma categoria desabilitada não aceita novas ofertas, e as ofertas existentes dela deixam de aparecer no catálogo enquanto estiver desabilitada.
 - **RN61** — O catálogo pode ser filtrado por região atendida (RF10). Se o município informado não pertencer à região escolhida, a busca retorna vazia.
 
+#### Pedidos e negociação (módulo 1.4)
+- **RN62** — Ao fechar o carrinho (RF16), é gerado **um pedido por produtor**, todos com o mesmo endereço de entrega (escolhido entre os endereços do restaurante — RF30.2) e a mesma data desejada. Cada produtor aceita, negocia, entrega ou cancela o seu pedido de forma independente.
+- **RN63** — Só entram no pedido ofertas que estejam no catálogo naquele momento (RN01, RN02, RN06, RN49, RN60), com quantidade até o disponível. A data de entrega não pode estar no passado, nem antes do início ou depois da validade da oferta. Nome, unidade e preço de tabela do item são copiados no pedido; mudanças posteriores na oferta não alteram pedidos já feitos.
+- **RN64** — Negociação (RF18): o pedido nasce pendente, aguardando o produtor. Quem tem a vez pode aceitar os termos vigentes, fazer uma contraproposta de quantidade e preço por item e, opcionalmente, de data de entrega (a vez passa à outra parte), ou recusar. Todas as rodadas ficam registradas.
+- **RN65** — Enquanto o pagamento integrado não existir (módulo 1.5), o pedido é confirmado quando uma das partes aceita os termos propostos pela outra (RN09). Na confirmação, a quantidade de cada item é baixada do estoque da oferta; se não houver estoque suficiente, a confirmação não acontece.
+- **RN66** — Andamento (RF19): pendente → confirmado → em preparo → em transporte → entregue, ou cancelado. Só o produtor inicia o preparo e despacha; só o restaurante confirma o recebimento. Cada mudança fica registrada na linha do tempo, com horários de confirmação, início do preparo, coleta e entrega (RF30).
+- **RN67** — Ao despachar, o produtor informa, para cada item, a data de colheita/captura (obrigatória, não futura) e o lote (quando houver), que ficam no pedido (RN23).
+- **RN68** — Cancelamento (RF20), sempre com motivo:
+  - pendente: qualquer parte recusa ou desiste, sem efeitos;
+  - confirmado: sem multa;
+  - em preparo: o restaurante paga multa de um percentual do valor do pedido, definido pela administração (RN10; padrão 20%);
+  - em transporte ou entregue: não pode ser cancelado.
+
+  Ao cancelar um pedido que já tinha baixado estoque, a quantidade volta para a oferta.
+- **RN69** — Taxa de cumprimento do produtor (RN11) = pedidos entregues ÷ (entregues + pedidos que o produtor cancelou depois de confirmados). Recusar um pedido ainda pendente não conta.
+- **RN70** — Se o restaurante não confirmar o recebimento em até 72 horas após o despacho, o recebimento é confirmado automaticamente (RN14).
+- **RN71** — Ofertas equivalentes (RF17) são as da mesma categoria cujo nome começa pela mesma palavra, sem diferenciar acentos ou maiúsculas (ex.: "Tilápia inteira" e "tilapia fresca"). A comparação mostra preço, prazo, origem, distância e taxa de cumprimento do produtor.
+- **RN72** — Pedido recorrente (RF21): repete-se toda semana no dia de entrega escolhido. Os pedidos de cada semana são gerados 2 dias antes da entrega, pelo preço vigente das ofertas e seguindo o fluxo normal (aceite do produtor). Itens que não estiverem disponíveis naquele momento são pulados e informados no resumo da execução.
+- **RN73** — A suspensão de um pedido recorrente exige aviso de pelo menos 48 horas antes da próxima geração de pedidos (RN12). Com menos antecedência, a próxima execução ainda acontece e a suspensão vale logo depois. Ao retomar, a próxima entrega é recalculada a partir da data da retomada.
+- **RN74** — Cada pedido só pode ser visto e movimentado pelo restaurante e pelo produtor envolvidos. Restaurante e produtor precisam estar com o cadastro aprovado para fechar, aceitar ou negociar pedidos (RN01).
+
 ---
 
 *Documento estruturado como ponto de partida para elicitação com stakeholders, elaboração de backlog e especificação técnica detalhada (casos de uso, wireframes e modelo de dados).*

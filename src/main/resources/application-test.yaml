@@ -25,3 +25,5 @@ app:
     data-encryption-key: DSD19ZTZPPwiQoz43GFQH74U1tq5wSxiMEn22/MH31A=
   storage:
     local-dir: target/test-uploads
+  scheduling:
+    enabled: false

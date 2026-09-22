@@ -2,12 +2,15 @@ package br.com.senac.projectdevalle.catalog.infrastructure.persistence;
 
 import br.com.senac.projectdevalle.catalog.domain.offer.OfferStatus;
 import br.com.senac.projectdevalle.catalog.domain.offer.ProductCategory;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 // JpaSpecificationExecutor porque a busca do catálogo (RF10) combina vários filtros opcionais
@@ -15,6 +18,9 @@ import java.util.UUID;
 interface OfferJpaRepository extends JpaRepository<OfferJpaEntity, UUID>, JpaSpecificationExecutor<OfferJpaEntity> {
 
     List<OfferJpaEntity> findByProducerId(UUID producerId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<OfferJpaEntity> findWithLockById(UUID id);
 
     // RF42 — consultas do painel de indicadores.
     long countByStatus(OfferStatus status);

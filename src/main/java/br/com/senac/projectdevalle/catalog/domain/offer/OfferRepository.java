@@ -10,6 +10,9 @@ public interface OfferRepository {
 
     Optional<Offer> findById(UUID id);
 
+    // Leitura com lock pessimista: usada para reservar/devolver estoque sem perder atualizações concorrentes.
+    Optional<Offer> findByIdForUpdate(UUID id);
+
     List<Offer> findByProducerId(UUID producerId);
 
     List<Offer> search(CatalogFilter filter);

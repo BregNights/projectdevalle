@@ -14,6 +14,7 @@ import java.util.Set;
 // As categorias chegam como o enum do catálogo para que só categorias existentes possam ser habilitadas.
 public record UpdatePlatformSettingsRequest(
         @NotNull @DecimalMin("0") @DecimalMax(value = "100", inclusive = false) BigDecimal commissionPercentage,
+        @NotNull @DecimalMin("0") @DecimalMax(value = "100", inclusive = false) BigDecimal cancellationPenaltyPercentage,
         @NotEmpty List<@Valid CoverageRegionPayload> coverageRegions,
         @NotEmpty Set<ProductCategory> enabledProductCategories
 ) {

@@ -23,7 +23,8 @@ public class PlatformSettingsService {
 
     @Transactional
     public PlatformSettings update(UpdatePlatformSettingsCommand command) {
-        PlatformSettings settings = PlatformSettings.of(command.commissionPercentage(), command.coverageRegions(),
+        PlatformSettings settings = PlatformSettings.of(command.commissionPercentage(),
+                command.cancellationPenaltyPercentage(), command.coverageRegions(),
                 command.enabledProductCategories());
         return repository.save(settings);
     }

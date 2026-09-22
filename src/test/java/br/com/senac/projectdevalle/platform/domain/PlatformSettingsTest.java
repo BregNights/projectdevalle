@@ -18,7 +18,7 @@ class PlatformSettingsTest {
     // RN02 — a comparação de municípios ignora acento, caixa e espaços extras.
     @Test
     void coversCitiesIgnoringAccentsAndCase() {
-        PlatformSettings settings = PlatformSettings.of(BigDecimal.TEN, REGIONS, Set.of("FISH"));
+        PlatformSettings settings = PlatformSettings.of(BigDecimal.TEN, BigDecimal.TEN, REGIONS, Set.of("FISH"));
 
         assertThat(settings.covers("itajai")).isTrue();
         assertThat(settings.covers("  BALNEARIO   camboriu ")).isTrue();
@@ -28,14 +28,16 @@ class PlatformSettingsTest {
 
     @Test
     void validatesCommissionRange() {
-        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.valueOf(-1), REGIONS, Set.of("FISH")))
+        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.valueOf(-1), BigDecimal.TEN, REGIONS, Set.of("FISH")))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.valueOf(100), REGIONS, Set.of("FISH")))
+        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.valueOf(100), BigDecimal.TEN, REGIONS, Set.of("FISH")))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> PlatformSettings.of(new BigDecimal("10.555"), REGIONS, Set.of("FISH")))
+        assertThatThrownBy(() -> PlatformSettings.of(new BigDecimal("10.555"), BigDecimal.TEN, REGIONS, Set.of("FISH")))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThat(PlatformSettings.of(new BigDecimal("12.50"), REGIONS, Set.of("FISH")).commissionPercentage())
+        assertThat(PlatformSettings.of(new BigDecimal("12.50"), BigDecimal.TEN, REGIONS, Set.of("FISH")).commissionPercentage())
                 .isEqualByComparingTo("12.5");
+        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, BigDecimal.valueOf(100), REGIONS, Set.of("FISH")))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -47,19 +49,19 @@ class PlatformSettingsTest {
                 new CoverageRegion("Vale", List.of("Blumenau")),
                 new CoverageRegion("vale", List.of("Gaspar")));
 
-        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, overlapping, Set.of("FISH")))
+        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, BigDecimal.TEN, overlapping, Set.of("FISH")))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, duplicated, Set.of("FISH")))
+        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, BigDecimal.TEN, duplicated, Set.of("FISH")))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void requiresAtLeastOneRegionCityAndCategory() {
-        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, List.of(), Set.of("FISH")))
+        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, BigDecimal.TEN, List.of(), Set.of("FISH")))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new CoverageRegion("Vazia", List.of(" ")))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, REGIONS, Set.of()))
+        assertThatThrownBy(() -> PlatformSettings.of(BigDecimal.TEN, BigDecimal.TEN, REGIONS, Set.of()))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

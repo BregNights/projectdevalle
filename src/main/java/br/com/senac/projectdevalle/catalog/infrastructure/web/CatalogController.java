@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,5 +44,14 @@ public class CatalogController {
         SearchCatalogCommand command = new SearchCatalogCommand(category, producerId, region, city, certificationType,
                 minPrice, maxPrice, availableBy, requesterUserId);
         return searchCatalogService.search(command).stream().map(CatalogEntryResponse::from).toList();
+    }
+
+    // RF17 — comparação de ofertas equivalentes (mesmo produto, produtores diferentes).
+    @GetMapping("/offers/{offerId}/equivalents")
+    public List<CatalogEntryResponse> equivalents(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID offerId) {
+        UUID requesterUserId = jwt != null ? UUID.fromString(jwt.getSubject()) : null;
+        return searchCatalogService.equivalents(offerId, requesterUserId).stream()
+                .map(CatalogEntryResponse::from)
+                .toList();
     }
 }

@@ -13,10 +13,12 @@ import br.com.senac.projectdevalle.shared.application.port.DistanceCalculationPo
 import br.com.senac.projectdevalle.shared.application.port.EstimatedDistance;
 import br.com.senac.projectdevalle.shared.application.port.GeolocationUnavailableException;
 import br.com.senac.projectdevalle.shared.domain.PlaceNames;
+import br.com.senac.projectdevalle.shared.domain.ResourceNotFoundException;
 import br.com.senac.projectdevalle.shared.domain.vo.Coordinates;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -55,6 +57,27 @@ public class SearchCatalogService {
                 .filter(offer -> enabledCategories.contains(offer.category()))
                 .map(offer -> toCatalogEntry(offer, requesterCoordinates))
                 .toList();
+    }
+
+    // RF17 — ofertas equivalentes (mesma categoria e mesmo produto, de produtores diferentes) para comparação lado a
+    // lado. "Mesmo produto" = mesma primeira palavra do nome, ignorando acento e caixa ("Tilápia inteira" e
+    // "tilapia fresca"). Inclui a própria oferta de referência; ordenado pelo preço.
+    public List<CatalogEntry> equivalents(UUID offerId, UUID requesterUserId) {
+        Offer reference = offerRepository.findById(offerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Offer not found: " + offerId));
+        String productKey = productKey(reference.productName());
+        SearchCatalogCommand sameCategory = new SearchCatalogCommand(reference.category(), null, null, null, null,
+                null, null, null, requesterUserId);
+        return search(sameCategory).stream()
+                .filter(entry -> productKey(entry.offer().productName()).equals(productKey))
+                .sorted(Comparator.comparing(entry -> entry.offer().price()))
+                .toList();
+    }
+
+    private static String productKey(String productName) {
+        String normalized = PlaceNames.normalize(productName);
+        int space = normalized.indexOf(' ');
+        return space < 0 ? normalized : normalized.substring(0, space);
     }
 
     // RN01/RN02 — o catálogo sempre se restringe a produtores aptos a operar (aprovados): ofertas de

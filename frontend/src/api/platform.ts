@@ -14,6 +14,8 @@ export interface PlatformCoverage {
 
 export interface PlatformSettings extends PlatformCoverage {
   commissionPercentage: number;
+  // RN10 — multa do restaurante que cancela depois do início do preparo.
+  cancellationPenaltyPercentage: number;
 }
 
 // RF43 — regiões/municípios atendidos e categorias habilitadas pela administração (informação pública).

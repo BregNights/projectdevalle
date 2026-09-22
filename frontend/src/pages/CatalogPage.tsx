@@ -5,6 +5,8 @@ import { usePlatformCoverage } from '../api/platform';
 import { CERTIFICATION_LABELS, MEASUREMENT_UNIT_LABELS, PRODUCT_CATEGORY_LABELS } from '../api/labels';
 import type { CatalogEntryResponse, ProductCategory } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { AddToCart } from '../components/AddToCart';
+import { OfferComparison } from '../components/OfferComparison';
 
 const CATEGORY_OPTIONS = Object.keys(PRODUCT_CATEGORY_LABELS) as ProductCategory[];
 const CERTIFICATION_OPTIONS = Object.keys(CERTIFICATION_LABELS);
@@ -30,7 +32,9 @@ const INITIAL_FILTERS: FilterState = {
 };
 
 export function CatalogPage() {
-  const { token } = useAuth();
+  const { token, claims } = useAuth();
+  const canBuy = claims?.role === 'RESTAURANT';
+  const [comparingOfferId, setComparingOfferId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(INITIAL_FILTERS);
   const [entries, setEntries] = useState<CatalogEntryResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +163,8 @@ export function CatalogPage() {
 
       {error && <p className="form-error">{error}</p>}
 
+      {comparingOfferId && <OfferComparison offerId={comparingOfferId} onClose={() => setComparingOfferId(null)} />}
+
       {!loading && entries.length === 0 && !error && (
         <p className="admin-empty">Nenhuma oferta encontrada com esses filtros.</p>
       )}
@@ -202,6 +208,10 @@ export function CatalogPage() {
                 </span>
               )}
             </div>
+            {canBuy && <AddToCart entry={entry} />}
+            <button type="button" className="admin-action-ghost" onClick={() => setComparingOfferId(entry.offer.id)}>
+              Comparar com ofertas equivalentes
+            </button>
           </div>
         ))}
       </div>

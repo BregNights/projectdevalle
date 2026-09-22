@@ -16,6 +16,7 @@ interface RegionDraft {
 export function AdminSettings() {
   const { token } = useAuth();
   const [commission, setCommission] = useState('');
+  const [penalty, setPenalty] = useState('');
   const [regions, setRegions] = useState<RegionDraft[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ export function AdminSettings() {
 
   const apply = (settings: PlatformSettings) => {
     setCommission(String(settings.commissionPercentage));
+    setPenalty(String(settings.cancellationPenaltyPercentage));
     setRegions(settings.coverageRegions.map((region) => ({ name: region.name, citiesText: region.cities.join('\n') })));
     setCategories(settings.enabledProductCategories);
   };
@@ -57,6 +59,7 @@ export function AdminSettings() {
         '/api/v1/admin/settings',
         {
           commissionPercentage: Number(commission),
+          cancellationPenaltyPercentage: Number(penalty),
           coverageRegions: regions.map((region) => ({
             name: region.name.trim(),
             cities: region.citiesText
@@ -94,6 +97,22 @@ export function AdminSettings() {
             step="0.01"
             value={commission}
             onChange={(e) => setCommission(e.target.value)}
+            required
+          />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Política de cancelamento</legend>
+        <label>
+          Multa do restaurante que cancela depois de o produtor iniciar o preparo (% do pedido)
+          <input
+            type="number"
+            min="0"
+            max="99.99"
+            step="0.01"
+            value={penalty}
+            onChange={(e) => setPenalty(e.target.value)}
             required
           />
         </label>

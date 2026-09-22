@@ -38,6 +38,11 @@ class OfferRepositoryAdapter implements OfferRepository {
     }
 
     @Override
+    public Optional<Offer> findByIdForUpdate(UUID id) {
+        return jpaRepository.findWithLockById(id).map(mapper::toDomain);
+    }
+
+    @Override
     public List<Offer> search(CatalogFilter filter) {
         return jpaRepository.findAll(OfferSpecifications.fromFilter(filter)).stream().map(mapper::toDomain).toList();
     }

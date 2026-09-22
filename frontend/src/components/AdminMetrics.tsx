@@ -8,6 +8,7 @@ import {
   ROLE_LABELS,
   STATUS_LABELS,
 } from '../api/labels';
+import { formatMoney, ORDER_STATUS_LABELS, type OrderMetrics } from '../api/orders';
 import type { AdminMetricsResponse, CatalogMetricsResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 
@@ -47,6 +48,7 @@ export function AdminMetrics() {
   const { token } = useAuth();
   const [metrics, setMetrics] = useState<AdminMetricsResponse | null>(null);
   const [catalogMetrics, setCatalogMetrics] = useState<CatalogMetricsResponse | null>(null);
+  const [orderMetrics, setOrderMetrics] = useState<OrderMetrics | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,13 +59,15 @@ export function AdminMetrics() {
       setLoading(true);
       setError(null);
       try {
-        const [data, catalog] = await Promise.all([
+        const [data, catalog, orders] = await Promise.all([
           apiClient.get<AdminMetricsResponse>('/api/v1/admin/metrics', token),
           apiClient.get<CatalogMetricsResponse>('/api/v1/admin/metrics/catalog', token),
+          apiClient.get<OrderMetrics>('/api/v1/admin/metrics/orders', token),
         ]);
         if (!cancelled) {
           setMetrics(data);
           setCatalogMetrics(catalog);
+          setOrderMetrics(orders);
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof ApiError ? err.message : 'Não foi possível carregar as métricas.');
@@ -146,10 +150,35 @@ export function AdminMetrics() {
         </>
       )}
 
-      <p className="form-notice">
-        Volume transacionado, ticket médio, taxa de cancelamento e tempo médio de entrega aparecem aqui quando o
-        módulo de pedidos estiver ativo.
-      </p>
+      {orderMetrics && (
+        <>
+          <div className="metric-cards">
+            <div className="metric-card">
+              <span className="metric-value">{formatMoney(orderMetrics.deliveredVolume)}</span>
+              <span className="metric-label">Volume transacionado (entregues)</span>
+            </div>
+            <div className="metric-card">
+              <span className="metric-value">{formatMoney(orderMetrics.averageTicket)}</span>
+              <span className="metric-label">Ticket médio</span>
+            </div>
+            <div className="metric-card">
+              <span className="metric-value">
+                {orderMetrics.cancellationRate != null ? `${orderMetrics.cancellationRate}%` : '—'}
+              </span>
+              <span className="metric-label">Taxa de cancelamento</span>
+            </div>
+            <div className="metric-card">
+              <span className="metric-value">
+                {orderMetrics.averageDeliveryHours != null ? `${orderMetrics.averageDeliveryHours} h` : '—'}
+              </span>
+              <span className="metric-label">Tempo médio de entrega (da confirmação)</span>
+            </div>
+          </div>
+          <div className="metric-grid">
+            <Breakdown title="Pedidos por status" data={orderMetrics.ordersByStatus} labels={ORDER_STATUS_LABELS} />
+          </div>
+        </>
+      )}
 
       <div className="metric-grid">
         <Breakdown title="Produtores por status" data={metrics.producersByStatus} labels={STATUS_LABELS} />
