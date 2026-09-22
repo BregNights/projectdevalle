@@ -88,6 +88,85 @@ class ProducerTest {
         assertThat(producer.isEligibleToOperate()).isFalse();
     }
 
+    // RN29
+    @Test
+    void keepsTheReasonOfSuspensionAndClearsItOnReactivation() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+        producer.approve(address -> true);
+
+        producer.suspend("Documento vencido");
+        assertThat(producer.statusReason()).isEqualTo("Documento vencido");
+
+        producer.reactivate(address -> true);
+        assertThat(producer.status()).isEqualTo(RegistrationStatus.APPROVED);
+        assertThat(producer.statusReason()).isNull();
+    }
+
+    @Test
+    void rejectAndSuspendRequireAReason() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+
+        assertThatThrownBy(() -> producer.reject(" ")).isInstanceOf(IllegalArgumentException.class);
+        assertThat(producer.status()).isEqualTo(RegistrationStatus.PENDING);
+    }
+
+    // RF40
+    @Test
+    void reactivateOnlyAllowedFromSuspended() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+        producer.approve(address -> true);
+
+        assertThatThrownBy(() -> producer.reactivate(address -> true))
+                .isInstanceOf(BusinessRuleViolationException.class);
+    }
+
+    // RF40/RN02 — reativação revalida a área de cobertura.
+    @Test
+    void reactivateFailsWhenOutsideCoverageArea() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+        producer.approve(address -> true);
+        producer.suspend("reason");
+
+        assertThatThrownBy(() -> producer.reactivate(address -> false))
+                .isInstanceOf(OutsideCoverageAreaException.class);
+        assertThat(producer.status()).isEqualTo(RegistrationStatus.SUSPENDED);
+    }
+
+    // RF40
+    @Test
+    void removeIsAllowedFromAnyStatusButOnlyOnce() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+
+        producer.remove("Cadastro duplicado");
+
+        assertThat(producer.status()).isEqualTo(RegistrationStatus.REMOVED);
+        assertThat(producer.isEligibleToOperate()).isFalse();
+        assertThatThrownBy(() -> producer.remove("de novo")).isInstanceOf(BusinessRuleViolationException.class);
+    }
+
+    // RN02 — produtor aprovado não pode sair da área de cobertura.
+    @Test
+    void approvedProducerCannotMoveOriginOutsideCoverageArea() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+        producer.approve(address -> true);
+        Address outside = new Address("Rua das Flores", "1", "Centro", "Curitiba", "PR", "80020-000", null);
+
+        assertThatThrownBy(() -> producer.updateOriginAddress(OriginLocation.withoutCoordinates(outside),
+                address -> false))
+                .isInstanceOf(OutsideCoverageAreaException.class);
+        assertThat(producer.originLocation().address().city()).isNotEqualTo("Curitiba");
+    }
+
+    @Test
+    void pendingProducerCanFixOriginAddressEvenOutsideCoverageArea() {
+        Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
+        Address outside = new Address("Rua das Flores", "1", "Centro", "Curitiba", "PR", "80020-000", null);
+
+        producer.updateOriginAddress(OriginLocation.withoutCoordinates(outside), address -> false);
+
+        assertThat(producer.originLocation().address()).isEqualTo(outside);
+    }
+
     @Test
     void attachCertificationRequiresValidProof() {
         Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
@@ -104,7 +183,7 @@ class ProducerTest {
         Producer producer = newProducerWithCoordinates(new Coordinates(-26.9, -48.6));
         Address newAddress = new Address("Rua Nova", "50", "Bairro Novo", "Itajai", "SC", "88300-000", null);
 
-        producer.updateOriginAddress(OriginLocation.withoutCoordinates(newAddress));
+        producer.updateOriginAddress(OriginLocation.withoutCoordinates(newAddress), address -> true);
 
         assertThat(producer.originLocation().address()).isEqualTo(newAddress);
         assertThat(producer.isGeocodingPending()).isTrue();

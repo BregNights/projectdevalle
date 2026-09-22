@@ -1,6 +1,7 @@
 package br.com.senac.projectdevalle.registration.application.producer;
 
 import br.com.senac.projectdevalle.registration.application.producer.command.UpdateOriginAddressCommand;
+import br.com.senac.projectdevalle.registration.domain.producer.CoverageAreaPolicy;
 import br.com.senac.projectdevalle.registration.domain.producer.OriginLocation;
 import br.com.senac.projectdevalle.registration.domain.producer.Producer;
 import br.com.senac.projectdevalle.registration.domain.producer.ProducerRepository;
@@ -14,15 +15,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 // RF05 — corrigir o endereço de origem após o cadastro; a geocodificação é refeita
 // do mesmo jeito best-effort usado no cadastro (RNF11 — falha nunca bloqueia a operação).
+// RN02 — para produtor aprovado, o novo endereço precisa continuar dentro da área de cobertura.
 @Service
 public class UpdateOriginAddressService {
 
     private final ProducerRepository producerRepository;
     private final GeocodingPort geocodingPort;
+    private final CoverageAreaPolicy coverageAreaPolicy;
 
-    public UpdateOriginAddressService(ProducerRepository producerRepository, GeocodingPort geocodingPort) {
+    public UpdateOriginAddressService(ProducerRepository producerRepository, GeocodingPort geocodingPort,
+                                       CoverageAreaPolicy coverageAreaPolicy) {
         this.producerRepository = producerRepository;
         this.geocodingPort = geocodingPort;
+        this.coverageAreaPolicy = coverageAreaPolicy;
     }
 
     @Transactional
@@ -30,7 +35,7 @@ public class UpdateOriginAddressService {
         Producer producer = producerRepository.findByUserId(command.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("No producer registered for current user"));
 
-        producer.updateOriginAddress(resolveOriginLocation(command.address()));
+        producer.updateOriginAddress(resolveOriginLocation(command.address()), coverageAreaPolicy);
         producerRepository.save(producer);
 
         return producer.isGeocodingPending();

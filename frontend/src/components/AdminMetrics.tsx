@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 import { apiClient, ApiError } from '../api/client';
-import { CATEGORY_LABELS, PRODUCTION_TYPE_LABELS, ROLE_LABELS, STATUS_LABELS } from '../api/labels';
-import type { AdminMetricsResponse } from '../api/types';
+import {
+  CATEGORY_LABELS,
+  OFFER_STATUS_LABELS,
+  PRODUCT_CATEGORY_LABELS,
+  PRODUCTION_TYPE_LABELS,
+  ROLE_LABELS,
+  STATUS_LABELS,
+} from '../api/labels';
+import type { AdminMetricsResponse, CatalogMetricsResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 
 function formatDate(iso: string): string {
@@ -39,6 +46,7 @@ function Breakdown({ title, data, labels }: { title: string; data: Record<string
 export function AdminMetrics() {
   const { token } = useAuth();
   const [metrics, setMetrics] = useState<AdminMetricsResponse | null>(null);
+  const [catalogMetrics, setCatalogMetrics] = useState<CatalogMetricsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,8 +57,14 @@ export function AdminMetrics() {
       setLoading(true);
       setError(null);
       try {
-        const data = await apiClient.get<AdminMetricsResponse>('/api/v1/admin/metrics', token);
-        if (!cancelled) setMetrics(data);
+        const [data, catalog] = await Promise.all([
+          apiClient.get<AdminMetricsResponse>('/api/v1/admin/metrics', token),
+          apiClient.get<CatalogMetricsResponse>('/api/v1/admin/metrics/catalog', token),
+        ]);
+        if (!cancelled) {
+          setMetrics(data);
+          setCatalogMetrics(catalog);
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof ApiError ? err.message : 'Não foi possível carregar as métricas.');
       } finally {
@@ -104,6 +118,38 @@ export function AdminMetrics() {
           <span className="metric-label">Produtores sem localização resolvida</span>
         </div>
       </div>
+
+      {catalogMetrics && (
+        <>
+          <div className="metric-cards">
+            <div className="metric-card">
+              <span className="metric-value">{catalogMetrics.offersByStatus.ACTIVE ?? 0}</span>
+              <span className="metric-label">Ofertas ativas</span>
+            </div>
+            <div className="metric-card">
+              <span className="metric-value">{catalogMetrics.totalOffers}</span>
+              <span className="metric-label">Ofertas publicadas (total)</span>
+            </div>
+            <div className="metric-card">
+              <span className="metric-value">{catalogMetrics.producersWithActiveOffers}</span>
+              <span className="metric-label">Produtores com oferta ativa</span>
+            </div>
+          </div>
+          <div className="metric-grid">
+            <Breakdown
+              title="Ofertas ativas por categoria"
+              data={catalogMetrics.activeOffersByCategory}
+              labels={PRODUCT_CATEGORY_LABELS}
+            />
+            <Breakdown title="Ofertas por status" data={catalogMetrics.offersByStatus} labels={OFFER_STATUS_LABELS} />
+          </div>
+        </>
+      )}
+
+      <p className="form-notice">
+        Volume transacionado, ticket médio, taxa de cancelamento e tempo médio de entrega aparecem aqui quando o
+        módulo de pedidos estiver ativo.
+      </p>
 
       <div className="metric-grid">
         <Breakdown title="Produtores por status" data={metrics.producersByStatus} labels={STATUS_LABELS} />

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { apiClient, ApiError } from '../api/client';
+import { allCoveredCities, usePlatformCoverage } from '../api/platform';
 import type {
   ProducerRegistrationResponse,
   ProductionType,
@@ -10,6 +11,7 @@ import type {
 } from '../api/types';
 import { generateRandomPassword } from '../auth/socialLogin';
 import type { SocialSignupState } from '../auth/socialSignup';
+import { FileUploadField } from '../components/FileUploadField';
 
 const PRODUCTION_TYPES: { value: ProductionType; label: string }[] = [
   { value: 'FARMING', label: 'Agricultura' },
@@ -72,6 +74,9 @@ export function RegisterProducerPage() {
     email: socialSignup?.verifiedEmail ?? '',
   }));
   const [socialPassword] = useState(() => (socialSignup ? generateRandomPassword() : ''));
+  const [uploadedDocumentName, setUploadedDocumentName] = useState<string | null>(null);
+  const coverage = usePlatformCoverage();
+  const coveredCities = allCoveredCities(coverage);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<ProducerRegistrationResponse | null>(null);
@@ -83,6 +88,10 @@ export function RegisterProducerPage() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError(null);
+    if (!form.fileUrl) {
+      setError('Envie o arquivo do documento comprobatório.');
+      return;
+    }
     setSubmitting(true);
     try {
       const request: RegisterProducerRequest = {
@@ -216,7 +225,23 @@ export function RegisterProducerPage() {
           </label>
           <label>
             Cidade
-            <input value={form.city} onChange={(e) => update('city', e.target.value)} required />
+            <input
+              value={form.city}
+              onChange={(e) => update('city', e.target.value)}
+              list="covered-cities"
+              required
+            />
+            <datalist id="covered-cities">
+              {coveredCities.map((city) => (
+                <option key={city} value={city} />
+              ))}
+            </datalist>
+            {coveredCities.length > 0 && (
+              <span className="form-notice">
+                Atendemos: {coverage?.coverageRegions.map((region) => region.name).join(' e ')}. Cadastros de
+                outras cidades não podem ser aprovados.
+              </span>
+            )}
           </label>
           <label>
             Estado (UF)
@@ -251,16 +276,16 @@ export function RegisterProducerPage() {
             Número do documento
             <input value={form.documentNumber} onChange={(e) => update('documentNumber', e.target.value)} required />
           </label>
-          <label>
-            Link do arquivo digitalizado
-            <input
-              type="url"
-              placeholder="https://..."
-              value={form.fileUrl}
-              onChange={(e) => update('fileUrl', e.target.value)}
-              required
-            />
-          </label>
+          <FileUploadField
+            label="Arquivo do documento (PDF, JPG ou PNG)"
+            purpose="SUPPORTING_DOCUMENT"
+            required
+            uploadedName={uploadedDocumentName}
+            onUploaded={(file) => {
+              update('fileUrl', file.url);
+              setUploadedDocumentName(file.originalName);
+            }}
+          />
         </fieldset>
 
         {error && <p className="form-error">{error}</p>}

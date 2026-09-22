@@ -43,7 +43,7 @@ class UpdateOfferQuantityServiceTest {
         UUID userId = UUID.randomUUID();
         UUID offerId = UUID.randomUUID();
         Offer offer = anActiveOffer();
-        when(ownershipResolver.resolveOwnedOffer(offerId, userId)).thenReturn(offer);
+        when(ownershipResolver.resolveOwnedOfferForEditing(offerId, userId)).thenReturn(offer);
 
         service.update(new UpdateOfferQuantityCommand(offerId, userId, BigDecimal.ZERO));
 

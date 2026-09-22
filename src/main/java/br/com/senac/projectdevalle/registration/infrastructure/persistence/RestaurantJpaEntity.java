@@ -2,9 +2,11 @@ package br.com.senac.projectdevalle.registration.infrastructure.persistence;
 
 import br.com.senac.projectdevalle.registration.domain.common.RegistrationStatus;
 import br.com.senac.projectdevalle.registration.domain.restaurant.EstablishmentCategory;
+import br.com.senac.projectdevalle.shared.infrastructure.crypto.EncryptedStringConverter;
 import br.com.senac.projectdevalle.shared.infrastructure.persistence.AuditableJpaEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -41,6 +43,7 @@ public class RestaurantJpaEntity extends AuditableJpaEntity {
     @Column(name = "corporate_name", nullable = false)
     private String corporateName;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false)
     private String cnpj;
 
@@ -63,6 +66,9 @@ public class RestaurantJpaEntity extends AuditableJpaEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RegistrationStatus status;
+
+    @Column(name = "status_reason")
+    private String statusReason;
 
     @Builder.Default
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

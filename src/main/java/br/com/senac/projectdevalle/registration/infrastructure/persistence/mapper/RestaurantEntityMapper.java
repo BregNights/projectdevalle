@@ -31,6 +31,7 @@ public class RestaurantEntityMapper {
                 .contactPhone(contact.phone())
                 .contactEmail(contact.email())
                 .status(restaurant.status())
+                .statusReason(restaurant.statusReason())
                 .build();
 
         entity.setDeliveryAddresses(restaurant.deliveryAddresses().stream()
@@ -63,7 +64,8 @@ public class RestaurantEntityMapper {
                 .toList();
 
         return Restaurant.reconstitute(entity.getId(), entity.getUserId(), entity.getCorporateName(),
-                new Cnpj(entity.getCnpj()), entity.getCategory(), contact, deliveryAddresses, entity.getStatus());
+                new Cnpj(entity.getCnpj()), entity.getCategory(), contact, deliveryAddresses, entity.getStatus(),
+                entity.getStatusReason());
     }
 
     private DeliveryAddress toDomainAddress(RestaurantDeliveryAddressJpaEntity entity) {

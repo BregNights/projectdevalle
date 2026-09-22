@@ -3,6 +3,20 @@ spring:
     name: projectdevalle
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
+  # RF06 — SMTP para e-mails transacionais. Sem MAIL_HOST, os e-mails não são enviados (só registrados no log).
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_SMTP_STARTTLS:true}
+  servlet:
+    multipart:
+      # RF04/RF07 — maior limite por finalidade (documentos: 10 MB); o limite fino é validado no domínio.
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 springdoc:
   api-docs:
@@ -16,26 +30,15 @@ security:
       client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
 
 app:
+  # Usado para montar links enviados por e-mail (ex.: redefinição de senha).
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  mail:
+    from: ${MAIL_FROM:nao-responda@projectdevalle.com.br}
+  security:
+    # RNF06 — chave AES-256 (Base64) para criptografar documentos e dados bancários em repouso.
+    data-encryption-key: ${DATA_ENCRYPTION_KEY:}
+  storage:
+    # RF04/RF07 — diretório dos arquivos enviados (fotos, documentos, comprovantes).
+    local-dir: ${APP_STORAGE_DIR:./data/uploads}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
-  registration:
-    coverage-area:
-      # RN02/RF43 — regiões atendidas inicialmente (Vale do Itajaí e litoral norte de SC).
-      cities:
-        - Blumenau
-        - Brusque
-        - Gaspar
-        - Indaial
-        - Timbó
-        - Pomerode
-        - Ilhota
-        - Itajaí
-        - Navegantes
-        - Balneário Camboriú
-        - Camboriú
-        - Itapema
-        - Penha
-        - Piçarras
-        - Barra Velha
-        - São Francisco do Sul
-        - Joinville

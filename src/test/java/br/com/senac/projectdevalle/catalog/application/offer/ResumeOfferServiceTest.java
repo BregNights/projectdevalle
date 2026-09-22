@@ -43,7 +43,7 @@ class ResumeOfferServiceTest {
         UUID offerId = UUID.randomUUID();
         Offer offer = anActiveOffer();
         offer.pause();
-        when(ownershipResolver.resolveOwnedOffer(offerId, userId)).thenReturn(offer);
+        when(ownershipResolver.resolveOwnedOfferForEditing(offerId, userId)).thenReturn(offer);
 
         service.resume(new OfferOwnershipCommand(offerId, userId));
 

@@ -31,6 +31,7 @@ export const STATUS_LABELS: Record<string, string> = {
   APPROVED: 'Aprovado',
   REJECTED: 'Rejeitado',
   SUSPENDED: 'Suspenso',
+  REMOVED: 'Removido',
 };
 
 export const PRODUCT_CATEGORY_LABELS: Record<string, string> = {

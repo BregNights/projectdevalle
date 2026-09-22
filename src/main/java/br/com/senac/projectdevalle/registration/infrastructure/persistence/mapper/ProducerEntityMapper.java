@@ -52,6 +52,7 @@ public class ProducerEntityMapper {
                 .bankAccountHolder(bankDetails != null ? bankDetails.accountHolder() : null)
                 .deliveryArea(producer.deliveryArea().municipalities())
                 .status(producer.status())
+                .statusReason(producer.statusReason())
                 .build();
 
         entity.setSupportingDocuments(producer.supportingDocuments().stream()
@@ -111,6 +112,6 @@ public class ProducerEntityMapper {
 
         return Producer.reconstitute(entity.getId(), entity.getUserId(), entity.getName(), taxDocument,
                 entity.getProductionType(), originLocation, supportingDocuments, certifications, bankDetails,
-                deliveryArea, entity.getStatus());
+                deliveryArea, entity.getStatus(), entity.getStatusReason());
     }
 }

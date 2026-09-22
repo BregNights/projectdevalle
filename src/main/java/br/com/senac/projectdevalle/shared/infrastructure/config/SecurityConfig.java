@@ -36,6 +36,12 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/api-docs").permitAll()
                         // RF01/RF02 — o cadastro em si é público; as demais operações exigem autenticação.
                         .requestMatchers(HttpMethod.POST, "/api/v1/producers", "/api/v1/restaurants").permitAll()
+                        // RF04/RF07 — autorização por finalidade do arquivo é feita nos serviços de storage
+                        // (documentos do cadastro são enviados antes de a conta existir; fotos de oferta são públicas).
+                        .requestMatchers(HttpMethod.POST, "/api/v1/files").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/files/*").permitAll()
+                        // RF43 — regiões atendidas e categorias habilitadas (usadas já na tela de cadastro).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/platform/coverage").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resourceServer -> resourceServer
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));

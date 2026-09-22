@@ -27,6 +27,7 @@ public class Producer implements Registrable {
     private BankDetails bankDetails;
     private DeliveryArea deliveryArea;
     private RegistrationStatus status;
+    private String statusReason;
 
     private Producer(UUID id, UUID userId, String name, TaxDocument taxDocument, ProductionType productionType,
                       OriginLocation originLocation, RegistrationStatus status) {
@@ -58,8 +59,10 @@ public class Producer implements Registrable {
                                          ProductionType productionType, OriginLocation originLocation,
                                          List<SupportingDocument> supportingDocuments,
                                          List<Certification> certifications, BankDetails bankDetails,
-                                         DeliveryArea deliveryArea, RegistrationStatus status) {
+                                         DeliveryArea deliveryArea, RegistrationStatus status,
+                                         String statusReason) {
         Producer producer = new Producer(id, userId, name, taxDocument, productionType, originLocation, status);
+        producer.statusReason = statusReason;
         producer.supportingDocuments.addAll(supportingDocuments);
         producer.certifications.addAll(certifications);
         producer.bankDetails = bankDetails;
@@ -82,14 +85,29 @@ public class Producer implements Registrable {
         if (status != RegistrationStatus.PENDING) {
             throw new BusinessRuleViolationException("Only pending registrations can be approved");
         }
+        requireOperableLocation(coverageAreaPolicy, "approve");
+        this.status = RegistrationStatus.APPROVED;
+        this.statusReason = null;
+    }
+
+    // RF40 — reativação de um cadastro suspenso; revalida as mesmas condições da aprovação (RN02/RN30).
+    public void reactivate(CoverageAreaPolicy coverageAreaPolicy) {
+        if (status != RegistrationStatus.SUSPENDED) {
+            throw new BusinessRuleViolationException("Only suspended registrations can be reactivated");
+        }
+        requireOperableLocation(coverageAreaPolicy, "reactivate");
+        this.status = RegistrationStatus.APPROVED;
+        this.statusReason = null;
+    }
+
+    private void requireOperableLocation(CoverageAreaPolicy coverageAreaPolicy, String action) {
         if (isGeocodingPending()) {
             throw new ProducerNotEligibleToOperateException(
-                    "Cannot approve producer without resolved origin coordinates");
+                    "Cannot " + action + " producer without resolved origin coordinates");
         }
         if (!coverageAreaPolicy.covers(originLocation.address())) {
             throw new OutsideCoverageAreaException();
         }
-        this.status = RegistrationStatus.APPROVED;
     }
 
     @Override
@@ -97,6 +115,7 @@ public class Producer implements Registrable {
         if (status != RegistrationStatus.PENDING) {
             throw new BusinessRuleViolationException("Only pending registrations can be rejected");
         }
+        this.statusReason = requireReason(reason);
         this.status = RegistrationStatus.REJECTED;
     }
 
@@ -105,7 +124,25 @@ public class Producer implements Registrable {
         if (status != RegistrationStatus.APPROVED) {
             throw new BusinessRuleViolationException("Only approved registrations can be suspended");
         }
+        this.statusReason = requireReason(reason);
         this.status = RegistrationStatus.SUSPENDED;
+    }
+
+    // RF40 — remoção definitiva do cadastro pela administração.
+    @Override
+    public void remove(String reason) {
+        if (status == RegistrationStatus.REMOVED) {
+            throw new BusinessRuleViolationException("Registration is already removed");
+        }
+        this.statusReason = requireReason(reason);
+        this.status = RegistrationStatus.REMOVED;
+    }
+
+    private static String requireReason(String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("reason must not be blank");
+        }
+        return reason.trim();
     }
 
     // RN01 — só produtores aprovados podem publicar ofertas/operar na plataforma.
@@ -119,6 +156,11 @@ public class Producer implements Registrable {
         return status;
     }
 
+    @Override
+    public String statusReason() {
+        return statusReason;
+    }
+
     // RF04/RN03 — só é anexada se tiver comprovante e validade futura; certificações expiradas
     // deixam de ser válidas dinamicamente via Certification.isValid(Clock), sem precisar remover o registro.
     public void attachCertification(Certification certification, Clock clock) {
@@ -130,7 +172,12 @@ public class Producer implements Registrable {
 
     // RF05 — corrige o endereço de origem; a geocodificação anterior é descartada
     // (o chamador deve fornecer newOriginLocation já com as coordenadas recalculadas ou pendentes).
-    public void updateOriginAddress(OriginLocation newOriginLocation) {
+    // RN02 — um produtor aprovado não pode mover a origem para fora da área de cobertura; para pendentes e
+    // suspensos a cobertura é revalidada na aprovação/reativação.
+    public void updateOriginAddress(OriginLocation newOriginLocation, CoverageAreaPolicy coverageAreaPolicy) {
+        if (status == RegistrationStatus.APPROVED && !coverageAreaPolicy.covers(newOriginLocation.address())) {
+            throw new OutsideCoverageAreaException();
+        }
         this.originLocation = newOriginLocation;
     }
 

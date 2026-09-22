@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AccountPage } from './pages/AccountPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { MyOffersPage } from './pages/MyOffersPage';
@@ -22,6 +23,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
           <Route path="/cadastro/escolher-tipo" element={<SocialSignupChooserPage />} />
           <Route path="/cadastro/produtor" element={<RegisterProducerPage />} />
           <Route path="/cadastro/restaurante" element={<RegisterRestaurantPage />} />

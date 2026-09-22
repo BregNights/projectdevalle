@@ -19,7 +19,7 @@ public class ResumeOfferService {
 
     @Transactional
     public void resume(OfferOwnershipCommand command) {
-        Offer offer = ownershipResolver.resolveOwnedOffer(command.offerId(), command.userId());
+        Offer offer = ownershipResolver.resolveOwnedOfferForEditing(command.offerId(), command.userId());
         offer.resume();
         offerRepository.save(offer);
     }

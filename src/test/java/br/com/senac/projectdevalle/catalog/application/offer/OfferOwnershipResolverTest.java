@@ -6,6 +6,7 @@ import br.com.senac.projectdevalle.catalog.domain.offer.Offer;
 import br.com.senac.projectdevalle.catalog.domain.offer.OfferRepository;
 import br.com.senac.projectdevalle.catalog.domain.offer.ProductCategory;
 import br.com.senac.projectdevalle.catalog.domain.offer.Recurrence;
+import br.com.senac.projectdevalle.catalog.domain.offer.exception.ProducerNotEligibleException;
 import br.com.senac.projectdevalle.shared.domain.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,6 +83,32 @@ class OfferOwnershipResolverTest {
 
         assertThatThrownBy(() -> resolver.resolveOwnedOffer(offer.id(), userId))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    // RN01 — produtor suspenso não pode editar/repor/reativar ofertas.
+    @Test
+    void rejectsEditingWhenProducerIsNotEligibleToOperate() {
+        UUID userId = UUID.randomUUID();
+        UUID producerId = UUID.randomUUID();
+        Offer offer = anOfferOwnedBy(producerId);
+        when(producerDirectoryPort.findProducerIdByUserId(userId)).thenReturn(Optional.of(producerId));
+        when(offerRepository.findById(offer.id())).thenReturn(Optional.of(offer));
+        when(producerDirectoryPort.isEligibleToOperate(producerId)).thenReturn(false);
+
+        assertThatThrownBy(() -> resolver.resolveOwnedOfferForEditing(offer.id(), userId))
+                .isInstanceOf(ProducerNotEligibleException.class);
+    }
+
+    @Test
+    void allowsEditingWhenProducerIsEligibleToOperate() {
+        UUID userId = UUID.randomUUID();
+        UUID producerId = UUID.randomUUID();
+        Offer offer = anOfferOwnedBy(producerId);
+        when(producerDirectoryPort.findProducerIdByUserId(userId)).thenReturn(Optional.of(producerId));
+        when(offerRepository.findById(offer.id())).thenReturn(Optional.of(offer));
+        when(producerDirectoryPort.isEligibleToOperate(producerId)).thenReturn(true);
+
+        assertThat(resolver.resolveOwnedOfferForEditing(offer.id(), userId)).isSameAs(offer);
     }
 
     private static Offer anOfferOwnedBy(UUID producerId) {

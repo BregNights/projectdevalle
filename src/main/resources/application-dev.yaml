@@ -21,3 +21,9 @@ security:
     private-key: ${JWT_PRIVATE_KEY}
     public-key: ${JWT_PUBLIC_KEY}
     expiration: 8h
+
+# RF06 — sem SMTP configurado (MAIL_HOST), o conteúdo dos e-mails (inclusive o link de redefinição de senha)
+# aparece no log apenas em dev.
+app:
+  mail:
+    log-content: true

@@ -41,7 +41,7 @@ class UpdateOriginAddressServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new UpdateOriginAddressService(producerRepository, geocodingPort);
+        service = new UpdateOriginAddressService(producerRepository, geocodingPort, address -> true);
     }
 
     @Test

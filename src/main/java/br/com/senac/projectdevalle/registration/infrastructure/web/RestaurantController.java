@@ -88,7 +88,7 @@ public class RestaurantController {
     public RestaurantResponse findById(@PathVariable UUID id) {
         Restaurant restaurant = restaurantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found: " + id));
-        return RestaurantResponse.from(restaurant);
+        return RestaurantResponse.publicView(restaurant);
     }
 
     // Permite ao próprio restaurante autenticado consultar seu cadastro sem conhecer o restaurantId.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { apiClient, ApiError } from '../api/client';
 import { CATEGORY_LABELS, CERTIFICATION_LABELS, PRODUCTION_TYPE_LABELS } from '../api/labels';
-import type { ProducerResponse, RestaurantResponse } from '../api/types';
+import type { ProducerResponse, RegistrationStatus, RestaurantResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 import { StatusBadge } from '../components/StatusBadge';
 import { AdminPanel } from '../components/AdminPanel';
@@ -88,6 +88,7 @@ export function DashboardPage() {
               <span className="admin-empty">Nenhuma certificação verificada ainda.</span>
             )}
           </div>
+          <StatusReasonNotice status={producer.status} reason={producer.statusReason} />
           {producer.geocodingPending && (
             <p className="form-notice">
               Ainda não localizamos seu endereço no mapa. Isso será resolvido antes da aprovação do seu cadastro.
@@ -112,6 +113,7 @@ export function DashboardPage() {
               Endereços de entrega: <strong>{restaurant.deliveryAddressCount}</strong>
             </span>
           </div>
+          <StatusReasonNotice status={restaurant.status} reason={restaurant.statusReason} />
         </div>
       </div>
     );
@@ -122,4 +124,18 @@ export function DashboardPage() {
       <p>Nenhum cadastro encontrado para esta conta.</p>
     </div>
   );
+}
+
+// RN29 — o usuário vê o motivo informado pela administração ao rejeitar ou suspender o cadastro.
+function StatusReasonNotice({ status, reason }: { status: RegistrationStatus; reason: string | null }) {
+  if (status === 'REJECTED' || status === 'SUSPENDED') {
+    const label = status === 'REJECTED' ? 'Cadastro rejeitado' : 'Cadastro suspenso';
+    return (
+      <p className="form-error">
+        {label}
+        {reason ? `: ${reason}` : '.'} Enquanto isso, não é possível operar na plataforma.
+      </p>
+    );
+  }
+  return null;
 }

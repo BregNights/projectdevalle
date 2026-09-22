@@ -659,7 +659,8 @@ button[type='submit']:disabled {
 }
 
 .status-rejected,
-.status-suspended {
+.status-suspended,
+.status-removed {
   background: var(--danger-bg);
   color: var(--danger);
 }
@@ -1156,4 +1157,89 @@ button[type='submit']:disabled {
   .image-text-media {
     order: -1;
   }
+}
+
+/* RF07 — fotos das ofertas */
+.catalog-photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  background: var(--border);
+}
+
+.offer-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.offer-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.offer-photo {
+  position: relative;
+  display: inline-block;
+}
+
+.offer-photo img {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.offer-photo .chip-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--surface);
+  border-radius: 999px;
+}
+
+/* RF03 — documentos do cadastro na fila de aprovação */
+.admin-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primary, inherit);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* RF43 — configurações da plataforma */
+.settings-region {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.settings-categories label {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
 }

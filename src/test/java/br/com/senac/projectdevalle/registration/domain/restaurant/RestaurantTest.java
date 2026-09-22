@@ -1,5 +1,6 @@
 package br.com.senac.projectdevalle.registration.domain.restaurant;
 
+import br.com.senac.projectdevalle.registration.domain.common.RegistrationStatus;
 import br.com.senac.projectdevalle.shared.domain.BusinessRuleViolationException;
 import br.com.senac.projectdevalle.shared.domain.vo.Address;
 import br.com.senac.projectdevalle.shared.domain.vo.Cnpj;
@@ -111,6 +112,34 @@ class RestaurantTest {
         restaurant.approve();
 
         assertThat(restaurant.isEligibleToOperate()).isTrue();
+    }
+
+    // RF40/RN29
+    @Test
+    void suspendedRestaurantCanBeReactivatedAndReasonIsCleared() {
+        Restaurant restaurant = newRestaurant();
+        restaurant.addDeliveryAddress(DeliveryAddress.add("Matriz", validAddress(), null, false));
+        restaurant.approve();
+
+        restaurant.suspend("Pagamentos em atraso");
+        assertThat(restaurant.statusReason()).isEqualTo("Pagamentos em atraso");
+
+        restaurant.reactivate();
+        assertThat(restaurant.isEligibleToOperate()).isTrue();
+        assertThat(restaurant.statusReason()).isNull();
+    }
+
+    // RF40
+    @Test
+    void removedRestaurantCannotOperateNorBeRemovedAgain() {
+        Restaurant restaurant = newRestaurant();
+
+        restaurant.remove("Solicitação do titular");
+
+        assertThat(restaurant.status()).isEqualTo(RegistrationStatus.REMOVED);
+        assertThat(restaurant.isEligibleToOperate()).isFalse();
+        assertThatThrownBy(() -> restaurant.remove("de novo")).isInstanceOf(BusinessRuleViolationException.class);
+        assertThatThrownBy(restaurant::reactivate).isInstanceOf(BusinessRuleViolationException.class);
     }
 
     private static Restaurant newRestaurant() {

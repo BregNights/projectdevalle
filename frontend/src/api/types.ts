@@ -6,7 +6,7 @@ export type SupportingDocumentType = 'CPF' | 'CNPJ' | 'DAP_CAF' | 'FISHING_LICEN
 
 export type EstablishmentCategory = 'FINE_DINING' | 'BISTRO' | 'CHAIN' | 'OTHER';
 
-export type RegistrationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+export type RegistrationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED' | 'REMOVED';
 
 export interface AddressInput {
   street: string;
@@ -46,8 +46,25 @@ export interface ProducerResponse {
   name: string;
   productionType: ProductionType;
   status: RegistrationStatus;
+  statusReason: string | null;
   geocodingPending: boolean;
   visibleCertifications: string[];
+  // Só preenchidos para o administrador e para o próprio produtor (RF03/RN03).
+  supportingDocuments: SupportingDocumentView[];
+  certifications: CertificationView[];
+}
+
+export interface SupportingDocumentView {
+  type: SupportingDocumentType;
+  documentNumber: string;
+  fileUrl: string;
+}
+
+export interface CertificationView {
+  type: string;
+  proofUrl: string;
+  validUntil: string;
+  valid: boolean;
 }
 
 export interface ContactInput {
@@ -78,6 +95,7 @@ export interface RestaurantResponse {
   corporateName: string;
   category: EstablishmentCategory;
   status: RegistrationStatus;
+  statusReason: string | null;
   deliveryAddressCount: number;
 }
 
@@ -297,4 +315,12 @@ export interface AdminMetricsResponse {
   newRestaurantsLast30Days: number;
   topProducerCities: Record<string, number>;
   recentUsers: RecentUser[];
+}
+
+// RF42 — indicadores do catálogo.
+export interface CatalogMetricsResponse {
+  totalOffers: number;
+  offersByStatus: Record<string, number>;
+  activeOffersByCategory: Record<string, number>;
+  producersWithActiveOffers: number;
 }

@@ -1,6 +1,7 @@
 package br.com.senac.projectdevalle.catalog.application.catalog;
 
 import br.com.senac.projectdevalle.catalog.application.catalog.command.SearchCatalogCommand;
+import br.com.senac.projectdevalle.catalog.application.port.CatalogSettingsPort;
 import br.com.senac.projectdevalle.catalog.application.port.ProducerCatalogInfo;
 import br.com.senac.projectdevalle.catalog.application.port.ProducerDirectoryPort;
 import br.com.senac.projectdevalle.catalog.application.port.RestaurantDirectoryPort;
@@ -24,7 +25,9 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -32,6 +35,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,12 +57,16 @@ class SearchCatalogServiceTest {
     @Mock
     private DistanceCalculationPort distanceCalculationPort;
 
+    @Mock
+    private CatalogSettingsPort catalogSettingsPort;
+
     private SearchCatalogService service;
 
     @BeforeEach
     void setUp() {
         service = new SearchCatalogService(offerRepository, producerDirectoryPort, restaurantDirectoryPort,
-                distanceCalculationPort, FIXED_CLOCK);
+                distanceCalculationPort, catalogSettingsPort, FIXED_CLOCK);
+        lenient().when(catalogSettingsPort.enabledCategories()).thenReturn(EnumSet.allOf(ProductCategory.class));
     }
 
     @Test
@@ -78,23 +86,88 @@ class SearchCatalogServiceTest {
     void resolvesEligibleProducerIdsWhenFilteringByCityOrCertification() {
         UUID eligibleProducerId = UUID.randomUUID();
         when(offerRepository.search(any())).thenReturn(List.of());
-        when(producerDirectoryPort.findEligibleProducerIds("Blumenau", "ORGANIC"))
+        when(producerDirectoryPort.findEligibleProducerIds(Set.of("Blumenau"), "ORGANIC"))
                 .thenReturn(Set.of(eligibleProducerId));
 
         service.search(command("Blumenau", "ORGANIC", null, null));
 
-        verify(offerRepository).search(new CatalogFilter(null, null, Set.of(eligibleProducerId), null, null));
+        verify(offerRepository).search(new CatalogFilter(null, null, Set.of(eligibleProducerId), null, null, null));
+    }
+
+    // RN01 — mesmo buscando um produtor específico, só aparecem ofertas se ele estiver apto a operar;
+    // cidade/certificação são ignoradas nesse caso.
+    @Test
+    void restrictsExactProducerSearchToEligibleProducersIgnoringCityFilter() {
+        UUID producerId = UUID.randomUUID();
+        when(offerRepository.search(any())).thenReturn(List.of());
+        when(producerDirectoryPort.findEligibleProducerIds(null, null)).thenReturn(Set.of(producerId));
+
+        service.search(new SearchCatalogCommand(null, producerId, null, "Blumenau", null, null, null, null, null));
+
+        verify(offerRepository).search(new CatalogFilter(null, producerId, Set.of(producerId), null, null, null));
+    }
+
+    // RN01 — sem nenhum filtro, ofertas de produtores suspensos/removidos continuam fora do catálogo.
+    @Test
+    void alwaysRestrictsToEligibleProducersEvenWithoutFilters() {
+        UUID eligibleProducerId = UUID.randomUUID();
+        when(offerRepository.search(any())).thenReturn(List.of());
+        when(producerDirectoryPort.findEligibleProducerIds(null, null)).thenReturn(Set.of(eligibleProducerId));
+
+        service.search(command(null, null, null, null));
+
+        verify(offerRepository).search(new CatalogFilter(null, null, Set.of(eligibleProducerId), null, null, null));
+    }
+
+    // RF10 — filtro por região = produtores dos municípios daquela região.
+    @Test
+    void filtersByRegionUsingItsCities() {
+        when(offerRepository.search(any())).thenReturn(List.of());
+        when(catalogSettingsPort.citiesOfRegion("Vale do Itajaí")).thenReturn(Optional.of(Set.of("Blumenau", "Gaspar")));
+
+        service.search(new SearchCatalogCommand(null, null, "Vale do Itajaí", null, null, null, null, null, null));
+
+        verify(producerDirectoryPort).findEligibleProducerIds(Set.of("Blumenau", "Gaspar"), null);
     }
 
     @Test
-    void bypassesEligibilityLookupWhenSearchingByExactProducerId() {
-        UUID producerId = UUID.randomUUID();
+    void cityOutsideTheChosenRegionYieldsNoProducers() {
+        when(offerRepository.search(any())).thenReturn(List.of());
+        when(catalogSettingsPort.citiesOfRegion("Litoral Norte")).thenReturn(Optional.of(Set.of("Itajaí")));
+
+        service.search(new SearchCatalogCommand(null, null, "Litoral Norte", "Blumenau", null, null, null, null, null));
+
+        verify(producerDirectoryPort).findEligibleProducerIds(Set.of(), null);
+    }
+
+    @Test
+    void unknownRegionYieldsNoProducers() {
+        when(offerRepository.search(any())).thenReturn(List.of());
+        when(catalogSettingsPort.citiesOfRegion("Serra")).thenReturn(Optional.empty());
+
+        service.search(new SearchCatalogCommand(null, null, "Serra", null, null, null, null, null, null));
+
+        verify(producerDirectoryPort).findEligibleProducerIds(Set.of(), null);
+    }
+
+    // RF43 — ofertas de categorias desabilitadas pela administração saem do catálogo.
+    @Test
+    void hidesOffersOfDisabledCategories() {
+        Offer grains = anOffer();
+        when(catalogSettingsPort.enabledCategories()).thenReturn(EnumSet.of(ProductCategory.FISH));
+        when(offerRepository.search(any())).thenReturn(List.of(grains));
+
+        assertThat(service.search(command(null, null, null, null))).isEmpty();
+    }
+
+    @Test
+    void forwardsAvailableByDeadlineToTheRepositoryFilter() {
+        LocalDate deadline = LocalDate.of(2026, 6, 20);
         when(offerRepository.search(any())).thenReturn(List.of());
 
-        service.search(new SearchCatalogCommand(null, producerId, "Blumenau", null, null, null, null));
+        service.search(new SearchCatalogCommand(null, null, null, null, null, null, null, deadline, null));
 
-        verify(offerRepository).search(new CatalogFilter(null, producerId, null, null, null));
-        verify(producerDirectoryPort, never()).findEligibleProducerIds(any(), any());
+        verify(offerRepository).search(new CatalogFilter(null, null, Set.of(), null, null, deadline));
     }
 
     @Test
@@ -129,7 +202,7 @@ class SearchCatalogServiceTest {
                 .thenReturn(expectedDistance);
 
         List<CatalogEntry> entries = service.search(
-                new SearchCatalogCommand(null, null, null, null, null, null, requesterUserId));
+                new SearchCatalogCommand(null, null, null, null, null, null, null, null, requesterUserId));
 
         assertThat(entries.get(0).distance()).isEqualTo(expectedDistance);
     }
@@ -150,7 +223,7 @@ class SearchCatalogServiceTest {
         when(distanceCalculationPort.calculate(any(), any())).thenThrow(new GeolocationUnavailableException("timeout"));
 
         List<CatalogEntry> entries = service.search(
-                new SearchCatalogCommand(null, null, null, null, null, null, requesterUserId));
+                new SearchCatalogCommand(null, null, null, null, null, null, null, null, requesterUserId));
 
         assertThat(entries).hasSize(1);
         assertThat(entries.get(0).distance()).isNull();
@@ -158,7 +231,7 @@ class SearchCatalogServiceTest {
 
     private SearchCatalogCommand command(String city, String certificationType, BigDecimal minPrice,
                                           BigDecimal maxPrice) {
-        return new SearchCatalogCommand(null, null, city, certificationType, minPrice, maxPrice, null);
+        return new SearchCatalogCommand(null, null, null, city, certificationType, minPrice, maxPrice, null, null);
     }
 
     private static Offer anOffer() {

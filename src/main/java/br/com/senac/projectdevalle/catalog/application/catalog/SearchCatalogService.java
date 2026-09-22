@@ -1,15 +1,18 @@
 package br.com.senac.projectdevalle.catalog.application.catalog;
 
 import br.com.senac.projectdevalle.catalog.application.catalog.command.SearchCatalogCommand;
+import br.com.senac.projectdevalle.catalog.application.port.CatalogSettingsPort;
 import br.com.senac.projectdevalle.catalog.application.port.ProducerCatalogInfo;
 import br.com.senac.projectdevalle.catalog.application.port.ProducerDirectoryPort;
 import br.com.senac.projectdevalle.catalog.application.port.RestaurantDirectoryPort;
 import br.com.senac.projectdevalle.catalog.domain.offer.CatalogFilter;
 import br.com.senac.projectdevalle.catalog.domain.offer.Offer;
 import br.com.senac.projectdevalle.catalog.domain.offer.OfferRepository;
+import br.com.senac.projectdevalle.catalog.domain.offer.ProductCategory;
 import br.com.senac.projectdevalle.shared.application.port.DistanceCalculationPort;
 import br.com.senac.projectdevalle.shared.application.port.EstimatedDistance;
 import br.com.senac.projectdevalle.shared.application.port.GeolocationUnavailableException;
+import br.com.senac.projectdevalle.shared.domain.PlaceNames;
 import br.com.senac.projectdevalle.shared.domain.vo.Coordinates;
 import org.springframework.stereotype.Service;
 
@@ -26,40 +29,60 @@ public class SearchCatalogService {
     private final ProducerDirectoryPort producerDirectoryPort;
     private final RestaurantDirectoryPort restaurantDirectoryPort;
     private final DistanceCalculationPort distanceCalculationPort;
+    private final CatalogSettingsPort catalogSettingsPort;
     private final Clock clock;
 
     public SearchCatalogService(OfferRepository offerRepository, ProducerDirectoryPort producerDirectoryPort,
                                  RestaurantDirectoryPort restaurantDirectoryPort,
-                                 DistanceCalculationPort distanceCalculationPort, Clock clock) {
+                                 DistanceCalculationPort distanceCalculationPort,
+                                 CatalogSettingsPort catalogSettingsPort, Clock clock) {
         this.offerRepository = offerRepository;
         this.producerDirectoryPort = producerDirectoryPort;
         this.restaurantDirectoryPort = restaurantDirectoryPort;
         this.distanceCalculationPort = distanceCalculationPort;
+        this.catalogSettingsPort = catalogSettingsPort;
         this.clock = clock;
     }
 
     public List<CatalogEntry> search(SearchCatalogCommand command) {
         CatalogFilter filter = buildFilter(command);
         Coordinates requesterCoordinates = resolveRequesterCoordinates(command.requesterUserId());
+        // RF43 — categorias desabilitadas pela administração saem do catálogo.
+        Set<ProductCategory> enabledCategories = catalogSettingsPort.enabledCategories();
 
         return offerRepository.search(filter).stream()
                 .filter(offer -> offer.isVisibleInCatalog(clock))
+                .filter(offer -> enabledCategories.contains(offer.category()))
                 .map(offer -> toCatalogEntry(offer, requesterCoordinates))
                 .toList();
     }
 
+    // RN01/RN02 — o catálogo sempre se restringe a produtores aptos a operar (aprovados): ofertas de
+    // produtores suspensos ou removidos somem da busca, com ou sem filtro de cidade/certificação.
     private CatalogFilter buildFilter(SearchCatalogCommand command) {
-        if (command.producerId() != null) {
-            return new CatalogFilter(command.category(), command.producerId(), null, command.minPrice(),
-                    command.maxPrice());
+        boolean byProducer = command.producerId() != null;
+        Set<String> cities = byProducer ? null : resolveCities(command.region(), command.city());
+        String certificationType = byProducer ? null : command.certificationType();
+        Set<UUID> eligibleProducerIds = producerDirectoryPort.findEligibleProducerIds(cities, certificationType);
+        return new CatalogFilter(command.category(), command.producerId(), eligibleProducerIds, command.minPrice(),
+                command.maxPrice(), command.availableBy());
+    }
+
+    // RF10 — filtro por região (conjunto de municípios) e/ou município. Região desconhecida, ou município fora
+    // da região escolhida, resulta em nenhum município (busca vazia) em vez de ignorar o filtro.
+    private Set<String> resolveCities(String region, String city) {
+        boolean hasRegion = region != null && !region.isBlank();
+        boolean hasCity = city != null && !city.isBlank();
+        if (!hasRegion) {
+            return hasCity ? Set.of(city) : null;
         }
-        if (command.city() != null || command.certificationType() != null) {
-            Set<UUID> eligibleProducerIds = producerDirectoryPort.findEligibleProducerIds(command.city(),
-                    command.certificationType());
-            return new CatalogFilter(command.category(), null, eligibleProducerIds, command.minPrice(),
-                    command.maxPrice());
+        Set<String> regionCities = catalogSettingsPort.citiesOfRegion(region).orElse(Set.of());
+        if (!hasCity) {
+            return regionCities;
         }
-        return new CatalogFilter(command.category(), null, null, command.minPrice(), command.maxPrice());
+        return regionCities.stream().anyMatch(candidate -> PlaceNames.sameName(candidate, city))
+                ? Set.of(city)
+                : Set.of();
     }
 
     private Coordinates resolveRequesterCoordinates(UUID requesterUserId) {

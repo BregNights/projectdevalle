@@ -7,6 +7,7 @@ import br.com.senac.projectdevalle.registration.application.user.port.TokenServi
 import br.com.senac.projectdevalle.registration.domain.user.Role;
 import br.com.senac.projectdevalle.registration.domain.user.User;
 import br.com.senac.projectdevalle.registration.domain.user.UserRepository;
+import br.com.senac.projectdevalle.registration.domain.user.exception.InvalidCredentialsException;
 import br.com.senac.projectdevalle.shared.domain.vo.Email;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,6 +68,18 @@ class SocialAuthenticationServiceTest {
         var registrationRequired = (SocialAuthenticationResult.RegistrationRequired) result;
         assertThat(registrationRequired.email()).isEqualTo("nova@example.com");
         assertThat(registrationRequired.displayName()).isEqualTo("Nova");
+    }
+
+    // Conta desativada (cadastro removido pela administração) não pode entrar pelo login social.
+    @Test
+    void rejectsDeactivatedUser() {
+        User user = User.reconstitute(UUID.randomUUID(), new Email("joao@example.com"), "hash", Role.PRODUCER, false);
+        when(googleIdTokenVerifier.verify(any())).thenReturn(
+                new SocialIdentity("joao@example.com", true, "Joao"));
+        when(userRepository.findByEmail(any())).thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> service.authenticateWithGoogle(new SocialLoginCommand("id-token")))
+                .isInstanceOf(InvalidCredentialsException.class);
     }
 
     @Test

@@ -20,7 +20,7 @@ public class UpdateOfferQuantityService {
     // RN04 — atualização de estoque, com transição automática para/de SOLD_OUT.
     @Transactional
     public void update(UpdateOfferQuantityCommand command) {
-        Offer offer = ownershipResolver.resolveOwnedOffer(command.offerId(), command.userId());
+        Offer offer = ownershipResolver.resolveOwnedOfferForEditing(command.offerId(), command.userId());
         offer.updateQuantity(command.quantityAvailable());
         offerRepository.save(offer);
     }

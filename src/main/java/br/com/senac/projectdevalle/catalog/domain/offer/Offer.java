@@ -1,5 +1,6 @@
 package br.com.senac.projectdevalle.catalog.domain.offer;
 
+import br.com.senac.projectdevalle.catalog.domain.offer.exception.ExpiredAvailabilityWindowException;
 import br.com.senac.projectdevalle.catalog.domain.offer.exception.InvalidOfferTransitionException;
 import br.com.senac.projectdevalle.catalog.domain.offer.exception.MissingAvailabilityDeadlineException;
 
@@ -134,6 +135,14 @@ public class Offer {
         }
         LocalDate today = LocalDate.now(clock);
         return today.isAfter(availabilityWindow.until());
+    }
+
+    // RN48 — publicar ou editar uma oferta com validade já vencida não tem efeito prático (ela nunca apareceria
+    // no catálogo), então é recusado explicitamente em vez de aceito em silêncio.
+    public void requireNotExpired(Clock clock) {
+        if (isExpired(clock)) {
+            throw new ExpiredAvailabilityWindowException();
+        }
     }
 
     public boolean isVisibleInCatalog(Clock clock) {

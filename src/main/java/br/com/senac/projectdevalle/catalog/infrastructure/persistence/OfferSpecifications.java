@@ -20,7 +20,15 @@ final class OfferSpecifications {
             spec = spec.and((root, query, builder) -> builder.equal(root.get("producerId"), filter.producerId()));
         }
         if (filter.producerIdIn() != null) {
-            spec = spec.and((root, query, builder) -> root.get("producerId").in(filter.producerIdIn()));
+            // Conjunto vazio = nenhum produtor elegível; evita gerar um "IN ()" inválido em SQL.
+            spec = spec.and((root, query, builder) -> filter.producerIdIn().isEmpty()
+                    ? builder.disjunction()
+                    : root.get("producerId").in(filter.producerIdIn()));
+        }
+        if (filter.availableBy() != null) {
+            spec = spec.and((root, query, builder) -> builder.or(
+                    builder.isNull(root.get("availabilityFrom")),
+                    builder.lessThanOrEqualTo(root.get("availabilityFrom"), filter.availableBy())));
         }
         if (filter.minPrice() != null) {
             spec = spec.and((root, query, builder) -> builder.ge(root.get("price"), filter.minPrice()));

@@ -3,9 +3,11 @@ package br.com.senac.projectdevalle.registration.infrastructure.persistence;
 import br.com.senac.projectdevalle.registration.domain.common.RegistrationStatus;
 import br.com.senac.projectdevalle.registration.domain.producer.BankAccountType;
 import br.com.senac.projectdevalle.registration.domain.producer.ProductionType;
+import br.com.senac.projectdevalle.shared.infrastructure.crypto.EncryptedStringConverter;
 import br.com.senac.projectdevalle.shared.infrastructure.persistence.AuditableJpaEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -47,6 +49,7 @@ public class ProducerJpaEntity extends AuditableJpaEntity {
     @Column(name = "document_type", nullable = false)
     private String documentType;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "document_number", nullable = false)
     private String documentNumber;
 
@@ -84,12 +87,15 @@ public class ProducerJpaEntity extends AuditableJpaEntity {
     @Column(name = "geocoding_pending", nullable = false)
     private boolean geocodingPending;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "bank_name")
     private String bankName;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "bank_agency")
     private String bankAgency;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "bank_account")
     private String bankAccount;
 
@@ -97,6 +103,7 @@ public class ProducerJpaEntity extends AuditableJpaEntity {
     @Column(name = "bank_account_type")
     private BankAccountType bankAccountType;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "bank_account_holder")
     private String bankAccountHolder;
 
@@ -107,6 +114,9 @@ public class ProducerJpaEntity extends AuditableJpaEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RegistrationStatus status;
+
+    @Column(name = "status_reason")
+    private String statusReason;
 
     @Builder.Default
     @OneToMany(mappedBy = "producer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

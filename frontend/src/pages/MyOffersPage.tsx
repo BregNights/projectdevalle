@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { apiClient, ApiError } from '../api/client';
+import { publicFileSrc } from '../api/files';
+import { usePlatformCoverage } from '../api/platform';
 import {
   DAY_OF_WEEK_LABELS,
   MEASUREMENT_UNIT_LABELS,
@@ -15,11 +17,21 @@ import type {
   RecurrenceType,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { FileUploadField } from '../components/FileUploadField';
 import { OfferStatusBadge } from '../components/OfferStatusBadge';
 
 const CATEGORY_OPTIONS = Object.keys(PRODUCT_CATEGORY_LABELS) as ProductCategory[];
+const MAX_PHOTOS = 5;
 const UNIT_OPTIONS = Object.keys(MEASUREMENT_UNIT_LABELS) as MeasurementUnit[];
 const DAY_OPTIONS = Object.keys(DAY_OF_WEEK_LABELS) as DayOfWeekName[];
+
+// RN48 — a validade não pode estar no passado; usa a data local para não errar perto da meia-noite.
+function todayIsoDate(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
 
 interface FormState {
   productName: string;
@@ -31,7 +43,7 @@ interface FormState {
   recurrenceDayOfWeek: DayOfWeekName;
   availabilityFrom: string;
   availabilityUntil: string;
-  photoUrl: string;
+  photoUrls: string[];
 }
 
 const INITIAL_STATE: FormState = {
@@ -44,7 +56,7 @@ const INITIAL_STATE: FormState = {
   recurrenceDayOfWeek: 'MONDAY',
   availabilityFrom: '',
   availabilityUntil: '',
-  photoUrl: '',
+  photoUrls: [],
 };
 
 export function MyOffersPage() {
@@ -58,6 +70,20 @@ export function MyOffersPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const isPerishable = PERISHABLE_CATEGORIES.has(form.category);
+  const coverage = usePlatformCoverage();
+  // RF43 — só categorias habilitadas pela administração aparecem para novas ofertas.
+  const categoryOptions = coverage
+    ? CATEGORY_OPTIONS.filter((option) => coverage.enabledProductCategories.includes(option))
+    : CATEGORY_OPTIONS;
+
+  useEffect(() => {
+    if (!coverage || coverage.enabledProductCategories.length === 0) return;
+    setForm((prev) =>
+      coverage.enabledProductCategories.includes(prev.category)
+        ? prev
+        : { ...prev, category: coverage.enabledProductCategories[0] },
+    );
+  }, [coverage]);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -95,11 +121,11 @@ export function MyOffersPage() {
         recurrenceDayOfWeek: form.recurrenceType === 'RECURRING' ? form.recurrenceDayOfWeek : undefined,
         availabilityFrom: form.availabilityFrom || undefined,
         availabilityUntil: form.availabilityUntil || undefined,
-        photoUrls: form.photoUrl ? [form.photoUrl] : undefined,
+        photoUrls: form.photoUrls.length > 0 ? form.photoUrls : undefined,
       };
       const created = await apiClient.post<OfferResponse>('/api/v1/offers', request, token);
       setOffers((prev) => [created, ...prev]);
-      setForm(INITIAL_STATE);
+      setForm({ ...INITIAL_STATE, category: categoryOptions[0] ?? INITIAL_STATE.category });
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : 'Não foi possível publicar a oferta.');
     } finally {
@@ -154,7 +180,7 @@ export function MyOffersPage() {
             <label>
               Categoria
               <select value={form.category} onChange={(e) => update('category', e.target.value as ProductCategory)}>
-                {CATEGORY_OPTIONS.map((option) => (
+                {categoryOptions.map((option) => (
                   <option key={option} value={option}>
                     {PRODUCT_CATEGORY_LABELS[option]}
                   </option>
@@ -232,18 +258,35 @@ export function MyOffersPage() {
                 type="date"
                 value={form.availabilityUntil}
                 onChange={(e) => update('availabilityUntil', e.target.value)}
+                min={todayIsoDate()}
                 required={isPerishable}
               />
             </label>
-            <label>
-              Link de uma foto (opcional)
-              <input
-                type="url"
-                placeholder="https://..."
-                value={form.photoUrl}
-                onChange={(e) => update('photoUrl', e.target.value)}
+            {form.photoUrls.length < MAX_PHOTOS && (
+              <FileUploadField
+                label={`Fotos (opcional, até ${MAX_PHOTOS})`}
+                purpose="OFFER_PHOTO"
+                token={token}
+                onUploaded={(file) => update('photoUrls', [...form.photoUrls, file.url])}
               />
-            </label>
+            )}
+            {form.photoUrls.length > 0 && (
+              <div className="offer-photos">
+                {form.photoUrls.map((url) => (
+                  <span className="offer-photo" key={url}>
+                    <img src={publicFileSrc(url)} alt="Foto da oferta" />
+                    <button
+                      type="button"
+                      className="chip-remove"
+                      aria-label="Remover foto"
+                      onClick={() => update('photoUrls', form.photoUrls.filter((item) => item !== url))}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </fieldset>
 
         {formError && <p className="form-error">{formError}</p>}
@@ -263,6 +306,9 @@ export function MyOffersPage() {
           {offers.map((offer) => (
             <div className="admin-row" key={offer.id}>
               <div className="admin-row-info">
+                {offer.photoUrls.length > 0 && (
+                  <img className="offer-thumb" src={publicFileSrc(offer.photoUrls[0])} alt={offer.productName} />
+                )}
                 <div>
                   <strong>{offer.productName}</strong>
                   <span className="admin-row-subtitle">

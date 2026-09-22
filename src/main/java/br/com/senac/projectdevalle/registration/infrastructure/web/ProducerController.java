@@ -103,7 +103,7 @@ public class ProducerController {
     public ProducerResponse findById(@PathVariable UUID id) {
         Producer producer = producerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Producer not found: " + id));
-        return ProducerResponse.from(producer, clock);
+        return ProducerResponse.publicView(producer, clock);
     }
 
     // Permite ao próprio produtor autenticado consultar seu cadastro sem conhecer o producerId.

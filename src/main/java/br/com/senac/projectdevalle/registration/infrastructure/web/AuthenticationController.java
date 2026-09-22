@@ -15,8 +15,6 @@ import br.com.senac.projectdevalle.registration.infrastructure.web.dto.SocialLog
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.SocialLoginResponse;
 import br.com.senac.projectdevalle.registration.infrastructure.web.dto.TokenResponse;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
-
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
 
     private final AuthenticateUserService authenticateUserService;
     private final RecoverAccessService recoverAccessService;
@@ -65,13 +61,11 @@ public class AuthenticationController {
         };
     }
 
-    // RF06 — o token de reset é entregue por e-mail/WhatsApp pelo futuro módulo de notificações
-    // (RF38); por ora apenas registramos em log, nunca o devolvemos na resposta HTTP.
+    // RF06 — o link de redefinição vai por e-mail; o token nunca é devolvido na resposta HTTP.
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping("/password-reset/request")
     public void requestPasswordReset(@Valid @RequestBody RequestPasswordResetRequest request) {
-        recoverAccessService.requestReset(new RequestPasswordResetCommand(request.email()))
-                .ifPresent(token -> log.info("Password reset token issued for {}: {}", request.email(), token));
+        recoverAccessService.requestReset(new RequestPasswordResetCommand(request.email()));
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

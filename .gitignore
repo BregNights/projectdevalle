@@ -34,3 +34,6 @@ build/
 
 ### Environment ###
 .env
+
+### Uploads locais (RF04/RF07) ###
+data/

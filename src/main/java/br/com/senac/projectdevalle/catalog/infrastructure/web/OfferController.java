@@ -71,9 +71,8 @@ public class OfferController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public OfferResponse publish(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PublishOfferRequest request) {
-        Recurrence recurrence = request.recurrenceDayOfWeek() != null
-                ? Recurrence.weekly(request.recurrenceDayOfWeek())
-                : Recurrence.oneTime();
+        // RN45 — o tipo informado é respeitado; RECURRING sem dia (ou ONE_TIME com dia) é rejeitado pelo domínio.
+        Recurrence recurrence = new Recurrence(request.recurrenceType(), request.recurrenceDayOfWeek());
         AvailabilityWindow availabilityWindow = request.availabilityFrom() != null || request.availabilityUntil() != null
                 ? new AvailabilityWindow(request.availabilityFrom(), request.availabilityUntil())
                 : null;

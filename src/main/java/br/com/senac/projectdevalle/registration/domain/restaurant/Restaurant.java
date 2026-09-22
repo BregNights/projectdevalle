@@ -19,6 +19,7 @@ public class Restaurant implements Registrable {
     private Contact contact;
     private final List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
     private RegistrationStatus status;
+    private String statusReason;
 
     private Restaurant(UUID id, UUID userId, String corporateName, Cnpj cnpj, EstablishmentCategory category,
                         Contact contact, RegistrationStatus status) {
@@ -42,8 +43,10 @@ public class Restaurant implements Registrable {
 
     public static Restaurant reconstitute(UUID id, UUID userId, String corporateName, Cnpj cnpj,
                                            EstablishmentCategory category, Contact contact,
-                                           List<DeliveryAddress> deliveryAddresses, RegistrationStatus status) {
+                                           List<DeliveryAddress> deliveryAddresses, RegistrationStatus status,
+                                           String statusReason) {
         Restaurant restaurant = new Restaurant(id, userId, corporateName, cnpj, category, contact, status);
+        restaurant.statusReason = statusReason;
         restaurant.deliveryAddresses.addAll(deliveryAddresses);
         return restaurant;
     }
@@ -98,6 +101,16 @@ public class Restaurant implements Registrable {
             throw new BusinessRuleViolationException("At least one delivery address is required to approve");
         }
         this.status = RegistrationStatus.APPROVED;
+        this.statusReason = null;
+    }
+
+    // RF40 — reativação de um cadastro suspenso.
+    public void reactivate() {
+        if (status != RegistrationStatus.SUSPENDED) {
+            throw new BusinessRuleViolationException("Only suspended registrations can be reactivated");
+        }
+        this.status = RegistrationStatus.APPROVED;
+        this.statusReason = null;
     }
 
     @Override
@@ -105,6 +118,7 @@ public class Restaurant implements Registrable {
         if (status != RegistrationStatus.PENDING) {
             throw new BusinessRuleViolationException("Only pending registrations can be rejected");
         }
+        this.statusReason = requireReason(reason);
         this.status = RegistrationStatus.REJECTED;
     }
 
@@ -113,7 +127,25 @@ public class Restaurant implements Registrable {
         if (status != RegistrationStatus.APPROVED) {
             throw new BusinessRuleViolationException("Only approved registrations can be suspended");
         }
+        this.statusReason = requireReason(reason);
         this.status = RegistrationStatus.SUSPENDED;
+    }
+
+    // RF40 — remoção definitiva do cadastro pela administração.
+    @Override
+    public void remove(String reason) {
+        if (status == RegistrationStatus.REMOVED) {
+            throw new BusinessRuleViolationException("Registration is already removed");
+        }
+        this.statusReason = requireReason(reason);
+        this.status = RegistrationStatus.REMOVED;
+    }
+
+    private static String requireReason(String reason) {
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("reason must not be blank");
+        }
+        return reason.trim();
     }
 
     @Override
@@ -124,6 +156,11 @@ public class Restaurant implements Registrable {
     @Override
     public RegistrationStatus status() {
         return status;
+    }
+
+    @Override
+    public String statusReason() {
+        return statusReason;
     }
 
     public void updateProfile(String newCorporateName, EstablishmentCategory newCategory, Contact newContact) {

@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { apiClient, ApiError } from '../api/client';
-import { BANK_ACCOUNT_TYPE_LABELS } from '../api/labels';
+import { openProtectedFile } from '../api/files';
+import { BANK_ACCOUNT_TYPE_LABELS, CERTIFICATION_LABELS } from '../api/labels';
 import type {
   AddressInput,
   AddressResponse,
   BankAccountType,
+  CertificationView,
   ProducerAccountResponse,
+  ProducerResponse,
   UpdateOriginAddressResponse,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { FileUploadField } from '../components/FileUploadField';
 
 export function ProducerAccountPage() {
   const { token } = useAuth();
@@ -61,6 +65,7 @@ export function ProducerAccountPage() {
       />
       <BankDetailsSection bankDetails={account.bankDetails} token={token} onSaved={load} />
       <DeliveryAreaSection municipalities={account.deliveryAreaMunicipalities} token={token} onSaved={load} />
+      <CertificationsSection token={token} />
     </div>
   );
 }
@@ -371,6 +376,116 @@ function DeliveryAreaSection({
       {saved && !error && <p className="form-notice">Salvo com sucesso.</p>}
       <button type="submit" disabled={submitting}>
         {submitting ? 'Salvando...' : 'Salvar'}
+      </button>
+    </form>
+  );
+}
+
+// RF04/RN03 — certificações com comprovante; só ficam visíveis no perfil enquanto estiverem válidas.
+function CertificationsSection({ token }: { token: string | null }) {
+  const [certifications, setCertifications] = useState<CertificationView[]>([]);
+  const [type, setType] = useState('ORGANIC');
+  const [validUntil, setValidUntil] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
+  const [proofName, setProofName] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const producer = await apiClient.get<ProducerResponse>('/api/v1/producers/me', token);
+      setCertifications(producer.certifications ?? []);
+    } catch {
+      // A lista é informativa; o formulário continua utilizável.
+    }
+  }, [token]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setError(null);
+    setSaved(false);
+    if (!proofUrl) {
+      setError('Envie o comprovante da certificação.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await apiClient.post('/api/v1/producers/me/certifications', { type, proofUrl, validUntil }, token);
+      setSaved(true);
+      setProofUrl('');
+      setProofName(null);
+      setValidUntil('');
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Não foi possível anexar a certificação.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openProof = async (url: string) => {
+    try {
+      await openProtectedFile(url, token);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Não foi possível abrir o comprovante.');
+    }
+  };
+
+  return (
+    <form className="card-form" onSubmit={handleSubmit}>
+      <fieldset>
+        <legend>Certificações</legend>
+        {certifications.length === 0 ? (
+          <span className="admin-empty">Nenhuma certificação anexada.</span>
+        ) : (
+          <div className="admin-documents">
+            {certifications.map((certification) => (
+              <span key={`${certification.type}-${certification.proofUrl}`}>
+                {CERTIFICATION_LABELS[certification.type] ?? certification.type} — válida até{' '}
+                {certification.validUntil.split('-').reverse().join('/')}
+                {!certification.valid && ' (expirada, não aparece no perfil)'} ·{' '}
+                <button type="button" className="link-button" onClick={() => openProof(certification.proofUrl)}>
+                  ver comprovante
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <label>
+          Tipo
+          <select value={type} onChange={(e) => setType(e.target.value)}>
+            {Object.entries(CERTIFICATION_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Válida até
+          <input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} required />
+        </label>
+        <FileUploadField
+          label="Comprovante (PDF, JPG ou PNG)"
+          purpose="CERTIFICATION_PROOF"
+          token={token}
+          required
+          uploadedName={proofName}
+          onUploaded={(file) => {
+            setProofUrl(file.url);
+            setProofName(file.originalName);
+          }}
+        />
+      </fieldset>
+      {error && <p className="form-error">{error}</p>}
+      {saved && !error && <p className="form-notice">Certificação anexada.</p>}
+      <button type="submit" disabled={submitting}>
+        {submitting ? 'Anexando...' : 'Anexar certificação'}
       </button>
     </form>
   );
