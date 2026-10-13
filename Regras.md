@@ -220,7 +220,7 @@
 - **RN44** — Para fins da RN06, são perecíveis as categorias hortaliças, frutas, pescado, carnes/aves e laticínios. Ofertas com validade vencida deixam de aparecer no catálogo automaticamente, sem mudança de status.
 - **RN45** — Uma oferta recorrente é semanal e exige o dia da semana; uma oferta pontual não tem dia da semana.
 - **RN46** — O produtor só pode visualizar e gerenciar as próprias ofertas; ofertas de outros produtores são tratadas como inexistentes.
-- **RN47** — O catálogo só é acessível a usuários autenticados e exibe apenas ofertas ativas e dentro da validade, com o município do produtor (nunca o endereço exato, conforme RN24).
+- **RN47** — O catálogo é público, como a vitrine de um marketplace: qualquer visitante pode navegar, buscar, comparar ofertas e montar um carrinho sem cadastro. Exibe apenas ofertas ativas e dentro da validade, com o município do produtor (nunca o endereço exato, conforme RN24). A distância só aparece para restaurante autenticado (RN33), e fechar pedido continua exigindo conta de restaurante aprovada (RN74).
 - **RN48** — Não é permitido publicar uma oferta, nem alterar sua validade, com data de validade já vencida.
 - **RN49** — O catálogo exibe apenas ofertas de produtores com cadastro aprovado, com ou sem filtros aplicados: quando o produtor é suspenso ou removido, suas ofertas deixam de aparecer e voltam automaticamente se o cadastro for reativado (RN01). Enquanto não estiver aprovado, o produtor pode apenas pausar ou remover as próprias ofertas; publicar, editar, repor estoque e retomar exigem cadastro aprovado.
 - **RN50** — O restaurante pode filtrar o catálogo pelo prazo em que precisa do produto ("preciso até"): entram apenas ofertas cuja disponibilidade começa até essa data (RF10).
@@ -262,6 +262,7 @@
 - **RN72** — Pedido recorrente (RF21): repete-se toda semana no dia de entrega escolhido. Os pedidos de cada semana são gerados 2 dias antes da entrega, pelo preço vigente das ofertas e seguindo o fluxo normal (aceite do produtor). Itens que não estiverem disponíveis naquele momento são pulados e informados no resumo da execução.
 - **RN73** — A suspensão de um pedido recorrente exige aviso de pelo menos 48 horas antes da próxima geração de pedidos (RN12). Com menos antecedência, a próxima execução ainda acontece e a suspensão vale logo depois. Ao retomar, a próxima entrega é recalculada a partir da data da retomada.
 - **RN74** — Cada pedido só pode ser visto e movimentado pelo restaurante e pelo produtor envolvidos. Restaurante e produtor precisam estar com o cadastro aprovado para fechar, aceitar ou negociar pedidos (RN01).
+- **RN75** — O carrinho montado por um visitante fica guardado no navegador. Ao entrar com uma conta de restaurante, os itens são levados para o carrinho dessa conta; o cadastro ou o login só são pedidos na hora de finalizar o pedido.
 
 ---
 

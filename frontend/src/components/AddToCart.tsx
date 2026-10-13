@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CatalogEntryResponse } from '../api/types';
 import { useCart } from '../cart/CartContext';
+import { cartItemFrom } from '../cart/cartItem';
 
 // RF16 — adiciona uma oferta do catálogo ao carrinho do restaurante.
 export function AddToCart({ entry, compact }: { entry: CatalogEntryResponse; compact?: boolean }) {
@@ -12,17 +13,7 @@ export function AddToCart({ entry, compact }: { entry: CatalogEntryResponse; com
   const add = () => {
     const value = Number(quantity);
     if (!value || value <= 0) return;
-    cart.add({
-      offerId: entry.offer.id,
-      productName: entry.offer.productName,
-      producerId: entry.producerId,
-      producerName: entry.producerName,
-      unit: entry.offer.unit,
-      price: entry.offer.price,
-      quantity: Math.min(value, entry.offer.quantityAvailable),
-      quantityAvailable: entry.offer.quantityAvailable,
-      availableUntil: entry.offer.availabilityUntil,
-    });
+    cart.add(cartItemFrom(entry, value));
     setAdded(true);
   };
 

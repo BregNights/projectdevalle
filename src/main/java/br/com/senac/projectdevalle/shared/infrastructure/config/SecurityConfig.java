@@ -42,6 +42,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/files/*").permitAll()
                         // RF43 — regiões atendidas e categorias habilitadas (usadas já na tela de cadastro).
                         .requestMatchers(HttpMethod.GET, "/api/v1/platform/coverage").permitAll()
+                        // RN47 — o catálogo é a vitrine pública do marketplace: visitantes navegam e comparam ofertas
+                        // sem cadastro. A distância só é calculada para restaurante autenticado (RN33) e fechar pedido
+                        // continua exigindo conta aprovada (RN74).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog", "/api/v1/catalog/offers/*/equivalents")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resourceServer -> resourceServer
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { ImageTextBlock } from '../components/ImageTextBlock';
 
 const IMAGES = {
@@ -84,8 +85,8 @@ const DIFFERENTIALS = [
 ];
 
 const STEPS = [
-  { number: '1', title: 'Cadastre-se', text: 'Produtor ou restaurante, com verificação simples de documentos.' },
-  { number: '2', title: 'Aprovação', text: 'A administração da plataforma valida o cadastro antes de liberar o acesso.' },
+  { number: '1', title: 'Explore o catálogo', text: 'Veja ofertas, preços e produtores da região sem precisar de cadastro.' },
+  { number: '2', title: 'Cadastre-se', text: 'Na hora de vender ou fechar um pedido. A administração valida os documentos antes de liberar.' },
   { number: '3', title: 'Publique ou negocie', text: 'Ofertas, necessidades futuras ou propostas — o combinado vira pedido.' },
   { number: '4', title: 'Entrega e avaliação', text: 'Acompanhe o pedido até a entrega e avalie a experiência.' },
 ];
@@ -111,7 +112,8 @@ function Section({
   );
 }
 
-export function HomePage() {
+// Página institucional (antiga home): o que a plataforma oferece a produtores e restaurantes.
+export function AboutPage() {
   return (
     <div className="landing">
       <section className="hero">
@@ -121,7 +123,9 @@ export function HomePage() {
             Uma plataforma para produtores rurais e pescadores venderem direto para restaurantes da região —
             com geolocalização, pagamento protegido e rastreabilidade de origem.
           </p>
-          <p className="hero-note">Use o menu no topo da página para se cadastrar como produtor ou restaurante.</p>
+          <Link to="/" className="hero-note">
+            Explorar o catálogo →
+          </Link>
         </div>
       </section>
 
@@ -201,8 +205,8 @@ export function HomePage() {
       <Section className="cta-final">
         <h2>Pronto para começar?</h2>
         <p>
-          Use o menu no topo da página — <strong>Sou produtor</strong>, <strong>Sou restaurante</strong> ou{' '}
-          <strong>Entrar</strong>, se já tiver cadastro.
+          <Link to="/">Explore o catálogo</Link> sem cadastro, <Link to="/cadastro/produtor">venda como produtor</Link>{' '}
+          ou <Link to="/cadastro/restaurante">crie a conta do seu restaurante</Link>.
         </p>
       </Section>
     </div>

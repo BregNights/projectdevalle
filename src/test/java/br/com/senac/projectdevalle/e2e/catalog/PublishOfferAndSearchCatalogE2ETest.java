@@ -123,6 +123,33 @@ class PublishOfferAndSearchCatalogE2ETest extends AbstractIntegrationTest {
         assertThat(entry.producerId()).isEqualTo(producerId);
         assertThat(entry.producerName()).isEqualTo("Maria Produtora");
         assertThat(entry.producerCity()).isEqualTo("Blumenau");
+
+        // RN47 — visitante sem login também navega pelo catálogo e compara ofertas, mas sem distância (RN33).
+        CatalogEntryResponse anonymousEntry = client.get()
+                .uri("/api/v1/catalog?category=VEGETABLES")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(new ParameterizedTypeReference<List<CatalogEntryResponse>>() {
+                })
+                .returnResult()
+                .getResponseBody()
+                .stream()
+                .filter(candidate -> candidate.offer().productName().equals(productName))
+                .findFirst()
+                .orElseThrow();
+        assertThat(anonymousEntry.producerCity()).isEqualTo("Blumenau");
+        assertThat(anonymousEntry.distanceKilometers()).isNull();
+
+        assertThat(client.get()
+                .uri("/api/v1/catalog/offers/" + entry.offer().id() + "/equivalents")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(new ParameterizedTypeReference<List<CatalogEntryResponse>>() {
+                })
+                .returnResult()
+                .getResponseBody())
+                .extracting(candidate -> candidate.offer().productName())
+                .contains(productName);
     }
 
     // RN01/RF40 — ofertas de produtor suspenso somem do catálogo (mesmo sem filtros), o motivo fica registrado

@@ -19,7 +19,9 @@ O backend precisa permitir CORS para a origem do Vite (`http://localhost:5173` p
 
 - `src/api/` — cliente HTTP e tipos compartilhados com os DTOs do backend.
 - `src/auth/` — contexto de autenticação (token JWT em `localStorage`, decodificação do papel do usuário).
-- `src/pages/` — telas: home, cadastro de produtor, cadastro de restaurante, login e dashboard.
+- `src/marketplace/` — catálogo público (home e `/catalogo`) em três layouts de marketplace, escolhidos por
+  `?layout=feira|vitrine|atacado` ou pelo seletor fixo no rodapé (protótipo, para decidir o layout final).
+- `src/pages/` — telas: como funciona, cadastro de produtor, cadastro de restaurante, login, carrinho e dashboard.
 - `src/components/` — componentes reutilizáveis (navbar, badge de status, rota protegida).
 
 ## Escopo atual
@@ -27,3 +29,6 @@ O backend precisa permitir CORS para a origem do Vite (`http://localhost:5173` p
 Cobre o fluxo de cadastro e autoatendimento (RF01, RF02, RF06): cadastro de produtor/restaurante, login e
 consulta do próprio status de aprovação. Não há painel de administração nesta fase — a aprovação de
 cadastros é feita apenas via API.
+
+O catálogo e o carrinho são públicos (RN47/RN75): visitantes navegam, buscam e montam o carrinho sem cadastro;
+o login como restaurante só é pedido para finalizar o pedido, e os itens do visitante passam para a conta.

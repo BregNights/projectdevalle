@@ -2,12 +2,12 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Route, Routes } from 'react-router-dom';
 import { NavBar } from './components/NavBar';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { MarketplacePage } from './marketplace/MarketplacePage';
+import { AboutPage } from './pages/AboutPage';
 import { AccountPage } from './pages/AccountPage';
 import { CartPage } from './pages/CartPage';
-import { CatalogPage } from './pages/CatalogPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { MyOffersPage } from './pages/MyOffersPage';
 import { OrderDetailPage } from './pages/OrderDetailPage';
@@ -25,7 +25,11 @@ function AppRoutes() {
       <NavBar />
       <main>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          {/* RN47 — catálogo e carrinho são públicos; o login só é pedido para finalizar o pedido. */}
+          <Route path="/" element={<MarketplacePage />} />
+          <Route path="/catalogo" element={<MarketplacePage />} />
+          <Route path="/carrinho" element={<CartPage />} />
+          <Route path="/como-funciona" element={<AboutPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/recuperar-senha" element={<ForgotPasswordPage />} />
           <Route path="/cadastro/escolher-tipo" element={<SocialSignupChooserPage />} />
@@ -35,8 +39,6 @@ function AppRoutes() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/perfil" element={<AccountPage />} />
             <Route path="/ofertas" element={<MyOffersPage />} />
-            <Route path="/catalogo" element={<CatalogPage />} />
-            <Route path="/carrinho" element={<CartPage />} />
             <Route path="/pedidos" element={<OrdersPage />} />
             <Route path="/pedidos/:id" element={<OrderDetailPage />} />
             <Route path="/pedidos-recorrentes" element={<RecurringOrdersPage />} />

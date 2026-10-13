@@ -13,7 +13,8 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const passwordReset = (location.state as { passwordReset?: boolean } | null)?.passwordReset === true;
+  const state = location.state as { passwordReset?: boolean; from?: string } | null;
+  const passwordReset = state?.passwordReset === true;
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -22,7 +23,7 @@ export function LoginPage() {
     try {
       const response = await apiClient.post<TokenResponse>('/api/v1/auth/login', { email, password });
       login(response.accessToken);
-      navigate('/dashboard');
+      navigate(state?.from ?? '/dashboard');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Não foi possível entrar. Tente novamente.');
     } finally {
@@ -33,6 +34,9 @@ export function LoginPage() {
   return (
     <div className="page page-form">
       <h1>Entrar</h1>
+      {state?.from === '/carrinho' && (
+        <p className="form-notice">Entre com sua conta de restaurante para finalizar o pedido. Seu carrinho fica guardado.</p>
+      )}
       {passwordReset && <p className="form-notice">Senha redefinida. Entre com a nova senha.</p>}
       <form onSubmit={handleSubmit}>
         <label>

@@ -1,5 +1,5 @@
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { loginWithGoogle } from './socialLogin';
@@ -10,6 +10,7 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
 export function SocialLoginButtons() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const from = (useLocation().state as { from?: string } | null)?.from;
   const [error, setError] = useState<string | null>(null);
 
   if (!GOOGLE_CLIENT_ID) {
@@ -23,7 +24,7 @@ export function SocialLoginButtons() {
       .then((response) => {
         if (response.status === 'AUTHENTICATED' && response.accessToken) {
           login(response.accessToken);
-          navigate('/dashboard');
+          navigate(from ?? '/dashboard');
           return;
         }
         const state: SocialSignupState = {

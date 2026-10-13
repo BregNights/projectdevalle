@@ -4,16 +4,17 @@ import { MEASUREMENT_UNIT_LABELS } from '../api/labels';
 import { formatDate, formatMoney, formatQuantity, type ProducerFulfillment } from '../api/orders';
 import type { CatalogEntryResponse } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { useCart } from '../cart/CartContext';
 import { AddToCart } from './AddToCart';
 
 // RF17 — ofertas equivalentes (mesmo produto, produtores diferentes) lado a lado: preço, prazo, origem,
 // distância e taxa de cumprimento do produtor (a avaliação por notas virá com o módulo de reputação — RF33).
 export function OfferComparison({ offerId, onClose }: { offerId: string; onClose: () => void }) {
-  const { token, claims } = useAuth();
+  const { token } = useAuth();
   const [entries, setEntries] = useState<CatalogEntryResponse[] | null>(null);
   const [fulfillment, setFulfillment] = useState<Record<string, ProducerFulfillment>>({});
   const [error, setError] = useState<string | null>(null);
-  const canBuy = claims?.role === 'RESTAURANT';
+  const canBuy = useCart().enabled;
 
   useEffect(() => {
     let cancelled = false;
@@ -22,6 +23,7 @@ export function OfferComparison({ offerId, onClose }: { offerId: string; onClose
       .then(async (list) => {
         if (cancelled) return;
         setEntries(list);
+        if (!token) return;
         const producers = [...new Set(list.map((entry) => entry.producerId))];
         const results = await Promise.all(
           producers.map((producerId) =>
@@ -95,9 +97,11 @@ export function OfferComparison({ offerId, onClose }: { offerId: string; onClose
                         : '—'}
                     </td>
                     <td>
-                      {stats?.fulfillmentRate != null
-                        ? `${stats.fulfillmentRate}% (${stats.deliveredOrders} entregas)`
-                        : 'sem histórico'}
+                      {!token
+                        ? 'entre para ver'
+                        : stats?.fulfillmentRate != null
+                          ? `${stats.fulfillmentRate}% (${stats.deliveredOrders} entregas)`
+                          : 'sem histórico'}
                     </td>
                     {canBuy && (
                       <td>

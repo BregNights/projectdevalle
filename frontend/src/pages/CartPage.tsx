@@ -17,8 +17,10 @@ type Mode = 'once' | 'recurring';
 
 // RF16 — carrinho com itens de vários produtores; ao finalizar, vira um pedido por produtor.
 // RF18 — o restaurante pode propor um preço por item. RF21 — ou transformar o carrinho em pedido semanal.
+// RN75 — visitantes montam o carrinho sem login; só a finalização pede conta de restaurante.
 export function CartPage() {
-  const { token } = useAuth();
+  const { token, claims } = useAuth();
+  const isRestaurant = claims?.role === 'RESTAURANT';
   const cart = useCart();
   const navigate = useNavigate();
   const [addresses, setAddresses] = useState<DeliveryAddress[]>([]);
@@ -31,6 +33,7 @@ export function CartPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isRestaurant) return;
     apiClient
       .get<DeliveryAddress[]>('/api/v1/restaurants/me/delivery-addresses', token)
       .then((list) => {
@@ -38,7 +41,7 @@ export function CartPage() {
         setDeliveryAddressId((current) => current || list.find((address) => address.primary)?.id || list[0]?.id || '');
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : 'Não foi possível carregar seus endereços.'));
-  }, [token]);
+  }, [token, isRestaurant]);
 
   const groups = useMemo(() => {
     const byProducer = new Map<string, CartItem[]>();
@@ -96,12 +99,23 @@ export function CartPage() {
     }
   };
 
+  if (!cart.enabled) {
+    return (
+      <div className="page">
+        <h1>Carrinho</h1>
+        <p className="admin-empty">
+          O carrinho é usado por restaurantes. <Link to="/">Voltar ao catálogo</Link>
+        </p>
+      </div>
+    );
+  }
+
   if (cart.items.length === 0) {
     return (
       <div className="page">
         <h1>Carrinho</h1>
         <p className="admin-empty">
-          Seu carrinho está vazio. <Link to="/catalogo">Ir para o catálogo</Link>
+          Seu carrinho está vazio. <Link to="/">Ir para o catálogo</Link>
         </p>
       </div>
     );
@@ -163,71 +177,92 @@ export function CartPage() {
         </section>
       ))}
 
-      <form className="card-form" onSubmit={handleSubmit}>
-        <fieldset>
-          <legend>Entrega</legend>
-          <label>
-            Endereço de entrega
-            <select value={deliveryAddressId} onChange={(e) => setDeliveryAddressId(e.target.value)} required>
-              {addresses.map((address) => (
-                <option key={address.id} value={address.id}>
-                  {address.label} — {address.address.street}, {address.address.number} ({address.address.city})
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="settings-categories">
-            <label>
-              <input type="radio" checked={mode === 'once'} onChange={() => setMode('once')} />
-              Pedido único
-            </label>
-            <label>
-              <input type="radio" checked={mode === 'recurring'} onChange={() => setMode('recurring')} />
-              Repetir toda semana
-            </label>
+      {!isRestaurant ? (
+        <section className="card-form checkout-gate">
+          <p className="cart-total">
+            Total estimado: <strong>{formatMoney(total)}</strong>
+          </p>
+          <h2>Para finalizar, entre com sua conta de restaurante</h2>
+          <p className="admin-subtitle">
+            Seu carrinho fica guardado neste navegador. Depois de entrar, os itens continuam aqui. Contas novas
+            passam pela aprovação da plataforma antes do primeiro pedido.
+          </p>
+          <div className="checkout-gate-actions">
+            <Link className="button-link" to="/login" state={{ from: '/carrinho' }}>
+              Entrar
+            </Link>
+            <Link className="button-link button-link-ghost" to="/cadastro/restaurante">
+              Criar conta de restaurante
+            </Link>
           </div>
-          {mode === 'once' ? (
+        </section>
+      ) : (
+        <form className="card-form" onSubmit={handleSubmit}>
+          <fieldset>
+            <legend>Entrega</legend>
             <label>
-              Data de entrega desejada
-              <input
-                type="date"
-                min={isoDate(new Date())}
-                value={deliveryDate}
-                onChange={(e) => setDeliveryDate(e.target.value)}
-                required
-              />
+              Endereço de entrega
+              <select value={deliveryAddressId} onChange={(e) => setDeliveryAddressId(e.target.value)} required>
+                {addresses.map((address) => (
+                  <option key={address.id} value={address.id}>
+                    {address.label} — {address.address.street}, {address.address.number} ({address.address.city})
+                  </option>
+                ))}
+              </select>
             </label>
-          ) : (
-            <>
+            <div className="settings-categories">
               <label>
-                Dia da entrega
-                <select value={deliveryDay} onChange={(e) => setDeliveryDay(e.target.value)}>
-                  {Object.entries(DAY_OF_WEEK_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                <input type="radio" checked={mode === 'once'} onChange={() => setMode('once')} />
+                Pedido único
               </label>
-              <p className="form-notice">
-                Os pedidos de cada semana são gerados 2 dias antes da entrega, com o preço vigente das ofertas.
-                Para suspender, avise com pelo menos 48 horas de antecedência.
-              </p>
-            </>
-          )}
-          <label>
-            Observações para os produtores (opcional)
-            <textarea rows={2} maxLength={1000} value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </label>
-        </fieldset>
-        <p className="cart-total">
-          Total estimado: <strong>{formatMoney(total)}</strong>
-        </p>
-        {error && <p className="form-error">{error}</p>}
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Enviando...' : mode === 'once' ? 'Fazer pedido' : 'Criar pedido recorrente'}
-        </button>
-      </form>
+              <label>
+                <input type="radio" checked={mode === 'recurring'} onChange={() => setMode('recurring')} />
+                Repetir toda semana
+              </label>
+            </div>
+            {mode === 'once' ? (
+              <label>
+                Data de entrega desejada
+                <input
+                  type="date"
+                  min={isoDate(new Date())}
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  required
+                />
+              </label>
+            ) : (
+              <>
+                <label>
+                  Dia da entrega
+                  <select value={deliveryDay} onChange={(e) => setDeliveryDay(e.target.value)}>
+                    {Object.entries(DAY_OF_WEEK_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="form-notice">
+                  Os pedidos de cada semana são gerados 2 dias antes da entrega, com o preço vigente das ofertas.
+                  Para suspender, avise com pelo menos 48 horas de antecedência.
+                </p>
+              </>
+            )}
+            <label>
+              Observações para os produtores (opcional)
+              <textarea rows={2} maxLength={1000} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </label>
+          </fieldset>
+          <p className="cart-total">
+            Total estimado: <strong>{formatMoney(total)}</strong>
+          </p>
+          {error && <p className="form-error">{error}</p>}
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Enviando...' : mode === 'once' ? 'Fazer pedido' : 'Criar pedido recorrente'}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

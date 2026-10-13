@@ -18,7 +18,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-// RF10/RF11 — busca do catálogo, disponível para qualquer usuário autenticado (restaurante, produtor ou admin).
+// RF10/RF11 — busca do catálogo, pública (RN47): visitantes sem login também navegam; a distância só é calculada
+// quando quem busca é um restaurante autenticado.
 @RestController
 @RequestMapping("/api/v1/catalog")
 public class CatalogController {
